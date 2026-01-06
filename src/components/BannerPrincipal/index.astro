@@ -1,0 +1,84 @@
+---
+import Button from "../Button/index.astro";
+---
+
+<section class="relative flex flex-col w-full h-[600px] px-10">
+  <picture class="absolute w-full h-full top-0 left-0">
+    <img
+      class="w-full h-full object-cover"
+      src="https://images.unsplash.com/photo-1551295022-de5522c94e08?q=80&w=871&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      alt=""
+      srcset=""
+    />
+  </picture>
+  <div
+    class="w-full h-full bg-gradient-to-br from-[#000000] to-[#00000010] absolute top-0 left-0"
+  >
+  </div>
+  <article
+    class="absolute max-w-[60%] flex flex-col items-start h-full gap-8 justify-center"
+  >
+    <h1 class="text-[64px] font-bold text-white flex flex-col m-0">
+      Servicios profesionales <span>para tu hogar</span>
+    </h1>
+    <p class="text-[32px] text-white m-0">
+      Limpieza, construccion y carpinteria de confianza para hogares y empresas.
+    </p>
+    <Button text="Solicitar presupuesto" />
+    <p class="text-white text-[32px] m-0">Ver todos los servicios →</p>
+  </article>
+
+  <picture
+    id="parallax-worker"
+    class="w-[20%] absolute top-0 right-0"
+    style="will-change: transform;"
+  >
+    <img
+      src="https://png.pngtree.com/png-clipart/20231017/original/pngtree-engineer-man-worker-in-hard-hat-with-showing-thumbs-up-png-image_13340376.png"
+      alt=""
+    />
+  </picture>
+</section>
+
+<script is:inline>
+  const el = document.getElementById("parallax-worker");
+
+  let isVisible = false;
+  let currentY = 0;
+  let targetY = 0;
+
+  const MAX_TRANSLATE = 250;
+  const SPEED = 0.08; // menor = más suave
+
+  // Interpolación (lerp)
+  const lerp = (start, end, ease) => start + (end - start) * ease;
+
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      isVisible = entry.isIntersecting;
+    },
+    { threshold: 0.1 }
+  );
+
+  observer.observe(el);
+
+  window.addEventListener("scroll", () => {
+    if (!isVisible) return;
+
+    const rect = el.getBoundingClientRect();
+    const progress = Math.min(
+      Math.max((window.innerHeight - rect.top) / window.innerHeight, 0),
+      1
+    );
+
+    targetY = progress * MAX_TRANSLATE;
+  });
+
+  function animate() {
+    currentY = lerp(currentY, targetY, SPEED);
+    el.style.transform = `translateY(${currentY}px)`;
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+</script>

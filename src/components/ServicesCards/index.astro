@@ -1,0 +1,53 @@
+---
+const services = [
+  {
+    title: "Limpieza Profesional",
+    text: "Limpieza integral para hogares y negocios.",
+    image:
+      "https://images.unsplash.com/photo-1551295022-de5522c94e08?q=80&w=871&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+  {
+    title: "Limpieza Profesional",
+    text: "Limpieza integral para hogares y negocios.",
+    image:
+      "https://images.unsplash.com/photo-1551295022-de5522c94e08?q=80&w=871&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+  {
+    title: "Limpieza Profesional",
+    text: "Limpieza integral para hogares y negocios.",
+    image:
+      "https://images.unsplash.com/photo-1551295022-de5522c94e08?q=80&w=871&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+];
+---
+
+<section
+  class="flex flex-col items-center justify-center mx-10 gap-5 my-[50px] min-h-[700px]"
+>
+  <h2 class="w-full text-[40px] font-bold m-0">Nuestros Servicios</h2>
+  <main class="flex flex-row gap-5">
+    {
+      services.map((service) => (
+        <article class="min-h-[400px] bg-white flex flex-col items-center gap-5 rounded-2xl  overflow-hidden shadow-xl">
+          <div class="relative flex flex-col items-center justify-center h-[66%] w-full">
+            <img
+              src={service.image}
+              alt=""
+              class="w-full h-full object-cover"
+            />
+            <div class="absolute w-full h-full bg-black/80 " />
+            <h3 class="absolute text-2xl font-bold text-white">
+              {service.title}
+            </h3>
+          </div>
+          <div class="flex flex-col gap-5 w-full h-full items-start justify-center p-10 ">
+            <p class="text-black text-3xl">{service.text}</p>
+            <a href="#" class="text-gray-500 text-sm">
+              Mas informacion →
+            </a>
+          </div>
+        </article>
+      ))
+    }
+  </main>
+</section>

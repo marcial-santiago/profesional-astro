@@ -1,0 +1,18 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import "../styles/global.css";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <BaseHead title={"Construcciones"} description={"SITE_DESCRIPTION"} />
+  </head>
+  <body>
+    <Header />
+    <main>
+      {(<slot />)}
+    </main></body
+  >
+</html>
