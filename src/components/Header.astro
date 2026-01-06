@@ -3,16 +3,19 @@ import HeaderLink from "./HeaderLink.astro";
 import Button from "../components/Button/index.astro";
 ---
 
-<header>
-  <nav class="flex flex-row items-center px-10">
-    <a href="/"><h2 class="text-[64px] font-bold mr-8">LOGO</h2></a>
+<header class="sticky top-0 z-50 bg-white shadow-sm">
+  <nav class="flex flex-row items-center px-10 py-4">
+    <a href="/"><h2 class="text-2xl font-bold mr-8 text-blue-600">LOGO</h2></a>
     <div class="flex flex-row items-center gap-5">
-      <HeaderLink href="/">Home</HeaderLink>
-      <HeaderLink href="/blog">Service</HeaderLink>
-      <HeaderLink href="/about">Contacto</HeaderLink>
+      <HeaderLink href="/#inicio">Inicio</HeaderLink>
+      <HeaderLink href="/#servicios">Servicios</HeaderLink>
+      <HeaderLink href="/#nosotros">Nosotros</HeaderLink>
+      <HeaderLink href="/#contacto">Contacto</HeaderLink>
     </div>
     <div class="ml-auto">
-      <Button text="Solicitar presupuesto" />
+      <a href="/#contacto">
+        <Button text="Solicitar presupuesto" />
+      </a>
     </div>
   </nav>
 </header>

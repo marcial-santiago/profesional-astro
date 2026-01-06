@@ -2,6 +2,7 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import "../styles/global.css";
+import Footer from "../components/Footer.astro";
 ---
 
 <!doctype html>
@@ -13,6 +14,7 @@ import "../styles/global.css";
     <Header />
     <main>
       {(<slot />)}
-    </main></body
-  >
+    </main>
+    <Footer />
+  </body>
 </html>

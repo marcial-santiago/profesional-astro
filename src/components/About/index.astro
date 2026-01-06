@@ -2,22 +2,33 @@
 import Button from "../Button/index.astro";
 ---
 
-<section>
-  <article>
-    <h2>Porque Elegirnos?</h2>
-    <ul>
-      <li>Atencion rapida y directa</li>
-      <li>Presupuestos claros y sin sorpresas</li>
-      <li>Profesionales con experiencia comprobada</li>
-      <li>Resultados de calidad garantizada</li>
-    </ul>
+<section class="flex flex-col items-center justify-center p-10">
+  <article
+    class="w-full min-h-[530px] bg-gray-500 flex flex-col justify-center items-center"
+  >
+    <div class="w-full max-w-[1160px]">
+      <h2 class="font-bold text-[40px] mb-5">Porque Elegirnos?</h2>
+      <ul class="list-disc pl-5 flex flex-col gap-5">
+        <li class="font-normal">Atencion rapida y directa</li>
+        <li>Presupuestos claros y sin sorpresas</li>
+        <li>Profesionales con experiencia comprobada</li>
+        <li>Resultados de calidad garantizada</li>
+      </ul>
+    </div>
   </article>
-  <article>
-    <h2>Solicita el servicio!</h2>
-    <p>
-      Contactanos ahora mismo y recibe una respuesta rapida y atencion
-      personalizada.
-    </p>
-    <Button text="Solicitar presupuesto" />
+
+  <article
+    class="w-full min-h-[250px] flex flex-row items-center justify-between p-10 bg-gradient-to-r from-[#000000] via-[#000000] to-[#ffffff00]"
+  >
+    <div class="flex flex-col px-[100px]">
+      <h2 class="text-white text-[40px]">Solicita el servicio!</h2>
+      <p class="text-white max-w-[734px] text-[20px]">
+        Contactanos ahora mismo y recibe una respuesta rapida y atencion
+        personalizada.
+      </p>
+    </div>
+    <div class="w-full max-w-[460px]">
+      <Button text="Solicitar presupuesto" />
+    </div>
   </article>
 </section>
