@@ -3,10 +3,20 @@ import BannerPrincipal from "../components/BannerPrincipal/index.astro";
 import BaseLayaout from "../layouts/BaseLayaout.astro";
 import ServicesCards from "../components/ServicesCards/index.astro";
 import About from "../components/About/index.astro";
+import PrincipalForm from "../components/PrincipalForm/index.astro";
 ---
 
 <BaseLayaout>
-  <BannerPrincipal />
-  <ServicesCards />
-  <About />
+  <section id="inicio">
+    <BannerPrincipal />
+  </section>
+  <section id="servicios">
+    <ServicesCards />
+  </section>
+  <section id="nosotros">
+    <About />
+  </section>
+  <section id="contacto">
+    <PrincipalForm />
+  </section>
 </BaseLayaout>
