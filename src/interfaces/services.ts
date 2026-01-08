@@ -1,5 +1,6 @@
 export type ServiceAll = {
   services: {
+    urlImage: string;
     nameUrl: string;
     sectionTitle: string;
     sectionSubtitle: string;

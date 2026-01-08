@@ -10,6 +10,8 @@ export const SERVICE_DATA: ServiceAll = {
   services: [
     {
       nameUrl: "limpieza",
+      urlImage:
+        "https://images.unsplash.com/photo-1761839258671-6495fdc188b3?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       sectionTitle: "Servicio de Limpieza",
       sectionSubtitle:
         "Ofrecemos servicios de limpieza profesional para hogares y oficinas.",
@@ -53,6 +55,8 @@ export const SERVICE_DATA: ServiceAll = {
     },
     {
       nameUrl: "plomeria",
+      urlImage:
+        "https://images.unsplash.com/photo-1761839258671-6495fdc188b3?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       sectionTitle: "Servicio de Plomería",
       sectionSubtitle:
         "Soluciones integrales de plomería para su hogar o negocio.",
@@ -88,6 +92,8 @@ export const SERVICE_DATA: ServiceAll = {
     },
     {
       nameUrl: "construccion",
+      urlImage:
+        "https://images.unsplash.com/photo-1761839258671-6495fdc188b3?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       sectionTitle: "Servicio de Construcción",
       sectionSubtitle:
         "Construimos sus sueños con calidad, eficiencia y atención al detalle.",
