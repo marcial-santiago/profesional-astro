@@ -1,0 +1,54 @@
+---
+export function getStaticPaths() {
+  return [
+    { params: { nameServices: "limpieza" } },
+    { params: { nameServices: "construccion" } },
+    { params: { nameServices: "plomeria" } },
+  ];
+}
+
+const { nameServices } = Astro.params;
+
+export const siteData = {
+  services: {
+    sectionTitle: "Nuestros Servicios",
+    sectionSubtitle:
+      "Ofrecemos soluciones profesionales adaptadas a tus necesidades.",
+    items: [
+      {
+        id: 1,
+        title: "Limpieza de oficinas",
+        description:
+          "Servicio profesional para mantener espacios de trabajo limpios y ordenados.",
+        image: "/images/service-1.jpg",
+        cta: "Contactar",
+      },
+      {
+        id: 2,
+        title: "Limpieza de hogares",
+        description: "Limpieza integral para casas y departamentos.",
+        image: "/images/service-2.jpg",
+        cta: "Contactar",
+      },
+      {
+        id: 3,
+        title: "Limpieza post obra",
+        description: "Eliminamos polvo y residuos después de remodelaciones.",
+        image: "/images/service-3.jpg",
+        cta: "Contactar",
+      },
+      {
+        id: 4,
+        title: "Limpieza profunda",
+        description: "Ideal para mudanzas o limpiezas generales intensivas.",
+        image: "/images/service-4.jpg",
+        cta: "Contactar",
+      },
+    ],
+  },
+};
+---
+
+<h2>
+  Service: {nameServices}
+</h2>
