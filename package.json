@@ -10,11 +10,22 @@
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.13",
+    "@astrojs/node": "^9.5.1",
     "@astrojs/rss": "^4.0.14",
     "@astrojs/sitemap": "^3.6.0",
+    "@prisma/adapter-better-sqlite3": "^7.2.0",
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^7.2.0",
     "@tailwindcss/vite": "^4.1.18",
+    "@types/pg": "^8.16.0",
     "astro": "^5.16.6",
+    "pg": "^8.16.3",
     "sharp": "^0.34.3",
     "tailwindcss": "^4.1.18"
+  },
+  "devDependencies": {
+    "dotenv": "^17.2.3",
+    "prisma": "^7.2.0",
+    "tsx": "^4.21.0"
   }
 }
