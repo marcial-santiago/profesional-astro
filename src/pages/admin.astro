@@ -1,0 +1,155 @@
+---
+export const prerender = false;
+
+import BaseLayaout from "../layouts/BaseLayaout.astro";
+import { prisma } from "../lib/prisma";
+
+const isLoggedIn = Astro.cookies.get("admin_session")?.value === "ok";
+
+let messages: any[] = [];
+
+if (isLoggedIn) {
+  messages = await prisma.message.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+}
+---
+
+<BaseLayaout>
+  <div class="min-h-screen bg-slate-50 text-slate-800 font-sans">
+    <div class="max-w-5xl mx-auto px-8 py-10">
+      {
+        isLoggedIn ? (
+          <>
+            <div class="flex items-center justify-between mb-10">
+              <div>
+                <h1 class="text-3xl font-semibold tracking-tight">Mensajes</h1>
+                <p class="text-sm text-slate-500 mt-1">
+                  Consultas recibidas desde el sitio web
+                </p>
+              </div>
+
+              <button
+                id="logout-btn"
+                class="text-sm text-slate-500 hover:text-slate-900 transition"
+              >
+                Cerrar sesión
+              </button>
+            </div>
+
+            {messages.length === 0 && (
+              <div class="bg-white border border-slate-200 rounded-xl p-10 text-center text-slate-500">
+                No hay mensajes por el momento.
+              </div>
+            )}
+
+            <ul class="space-y-6">
+              {messages.map((m) => (
+                <li class="group bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition">
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="space-y-1">
+                      <p class="text-lg font-medium text-slate-900">
+                        {m.nombre}
+                      </p>
+                      <p class="text-sm text-slate-500">{m.telefono}</p>
+                    </div>
+
+                    <span class="text-xs text-slate-400 whitespace-nowrap">
+                      {new Date(m.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div class="my-4 h-px bg-slate-100" />
+
+                  <span class="inline-flex items-center rounded-md bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-600">
+                    {m.servicio}
+                  </span>
+
+                  <p class="mt-4 text-slate-700 leading-relaxed">{m.mensaje}</p>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <>
+            <div class="min-h-[75vh] flex items-center justify-center">
+              <div class="w-full max-w-sm bg-white border border-slate-200 rounded-xl p-8 shadow-sm">
+                <h1 class="text-2xl font-semibold tracking-tight ">
+                  Panel administrativo
+                </h1>
+                <p class="text-sm text-slate-500 mt-1 mb-6">
+                  Accedé para gestionar los mensajes
+                </p>
+
+                <form id="login-form" class="space-y-4">
+                  <input
+                    name="user"
+                    placeholder="Usuario"
+                    required
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
+                  />
+
+                  <input
+                    name="password"
+                    type="password"
+                    placeholder="Contraseña"
+                    required
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
+                  />
+
+                  <p id="login-error" class="text-sm text-red-600 hidden">
+                    Usuario o contraseña incorrectos
+                  </p>
+
+                  <button
+                    type="submit"
+                    class="w-full rounded-lg bg-blue-600 text-white py-2 text-sm font-medium hover:bg-blue-700 transition"
+                  >
+                    Entrar
+                  </button>
+                </form>
+              </div>
+            </div>
+          </>
+        )
+      }
+    </div>
+
+    <script>
+      const loginForm = document.getElementById(
+        "login-form"
+      ) as HTMLFormElement;
+      const errorEl = document.getElementById("login-error");
+      const logoutBtn = document.getElementById("logout-btn");
+
+      loginForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorEl?.classList.add("hidden");
+
+        const formData = new FormData(loginForm);
+        const payload = {
+          user: formData.get("user"),
+          password: formData.get("password"),
+        };
+
+        try {
+          const res = await fetch("/api/admin/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          if (!res.ok) throw new Error();
+          window.location.reload();
+        } catch {
+          errorEl?.classList.remove("hidden");
+        }
+      });
+
+      logoutBtn?.addEventListener("click", async () => {
+        await fetch("/api/admin/logout", { method: "POST" });
+        window.location.reload();
+      });
+    </script>
+  </div>
+</BaseLayaout>

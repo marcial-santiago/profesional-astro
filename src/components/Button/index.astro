@@ -1,7 +1,7 @@
 ---
-const { text } = Astro.props;
+const { text, id } = Astro.props;
 ---
 
-<button class="rounded-2xl bg-sky-700 text-white py-5 px-10 text-2xl">
+<button id={id} class="rounded-2xl bg-black text-white py-5 px-10 text-2xl">
   {text}
 </button>
