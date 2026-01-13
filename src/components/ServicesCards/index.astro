@@ -3,31 +3,33 @@ import { SERVICE_DATA } from "../../consts";
 ---
 
 <section
-  class="flex flex-col items-center justify-center mx-10 gap-5 my-[50px] min-h-[700px]"
+  class="flex flex-col items-center justify-center gap-5 py-12.5 min-h-175 px-20 bg-linear-to-b from-sky-700 via-sky-300 to-white" 
 >
-  <h2 class="w-full text-[40px] font-bold m-0">Nuestros Servicios</h2>
+  <h2 class="w-full text-6xl font-bold m-0 text-white">Our Services</h2>
   <main class="flex flex-row gap-5">
     {
       SERVICE_DATA.services.map((service) => (
-        <article class="min-h-[400px] w-full bg-white flex flex-col items-center gap-5 rounded-2xl  overflow-hidden shadow-xl">
-          <div class="relative flex flex-col items-center justify-center h-[66%]  w-full">
+        <article class="min-h-100 w-full bg-white flex flex-col items-center gap-10 rounded-2xl  overflow-hidden shadow-xl max-w-md">
+          <div class="relative flex flex-col items-center justify-center h-[66%]  w-full bg-white">
             <img
               src={service.urlImage}
               alt=""
-              class="w-full h-full object-cover"
+              class="w-full h-full object-cover  filter brightness-30"
             />
-            <div class="absolute w-full h-full bg-black/80 " />
+            <div class="absolute w-full h-full" />
             <h3 class="absolute text-2xl font-bold text-white">
               {service.sectionTitle}
             </h3>
           </div>
-          <div class="flex flex-col gap-5 w-full h-full items-start justify-center p-10 ">
-            <p class="text-black text-3xl">{service.sectionSubtitle}</p>
+          <div class="flex flex-col gap-5 w-full h-full items-start justify-between px-5">
+            <p class="text-black text-xl font-semibold">
+              {service.sectionSubtitle}
+            </p>
             <a
               href={`/services/${service.nameUrl}`}
-              class="text-gray-500 text-sm"
+              class="text-gray-500 text-xl hover:underline mb-5"
             >
-              Mas informacion →
+              See more →
             </a>
           </div>
         </article>

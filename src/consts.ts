@@ -9,121 +9,121 @@ export const SITE_DESCRIPTION = "Welcome to my website!";
 export const SERVICE_DATA: ServiceAll = {
   services: [
     {
-      nameUrl: "limpieza",
+      nameUrl: "cleaning",
       urlImage:
-        "https://images.unsplash.com/photo-1761839258671-6495fdc188b3?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      sectionTitle: "Servicio de Limpieza",
+        "https://media.istockphoto.com/id/1417833187/photo/professional-cleaner-vacuuming-a-carpet.jpg?s=612x612&w=0&k=20&c=5h8NBR190d46Ni4MclqJ7Zf9ZOtf3TM3gPRJaHUdMjk=",
+      sectionTitle: "Cleaning Services",
       sectionSubtitle:
-        "Ofrecemos servicios de limpieza profesional para hogares y oficinas.",
-      subTitle: "Nuestros Compromisos",
+        "We offer professional cleaning services for homes and offices.",
+      subTitle: "Our Commitments",
       subText:
-        "En cada servicio, garantizamos profesionalismo, eficiencia y resultados impecables. Su satisfacción es nuestra prioridad.",
+        "In every service, we guarantee professionalism, efficiency, and impeccable results. Your satisfaction is our priority.",
       items: [
         {
           id: 1,
-          title: "Limpieza Residencial",
+          title: "Residential Cleaning",
           description:
-            "Servicio completo de limpieza para tu hogar, adaptable a tus necesidades.",
+            "Comprehensive home cleaning service, adaptable to your needs.",
           image: "/images/cleaning-residential.jpg",
-          cta: "Solicitar Presupuesto",
+          cta: "Request Quote",
         },
         {
           id: 2,
-          title: "Limpieza Comercial",
+          title: "Commercial Cleaning",
           description:
-            "Mantenemos tu espacio de trabajo impecable, contribuyendo a un ambiente productivo.",
+            "We keep your workspace spotless, contributing to a productive environment.",
           image: "/images/cleaning-commercial.jpg",
-          cta: "Solicitar Presupuesto",
+          cta: "Request Quote",
         },
         {
           id: 3,
-          title: "Limpieza Profunda",
+          title: "Deep Cleaning",
           description:
-            "Un servicio detallado para una limpieza a fondo de cada rincón.",
+            "A detailed service for thorough cleaning of every corner.",
           image: "/images/cleaning-deep.jpg",
-          cta: "Solicitar Presupuesto",
+          cta: "Request Quote",
         },
         {
           id: 4,
-          title: "Limpieza Post-Obra",
+          title: "Post-Construction Cleaning",
           description:
-            "Eliminamos escombros y polvo después de cualquier proyecto de construcción o renovación.",
+            "We remove debris and dust after any construction or renovation project.",
           image: "/images/cleaning-post-construction.jpg",
-          cta: "Solicitar Presupuesto",
+          cta: "Request Quote",
         },
       ],
     },
     {
-      nameUrl: "plomeria",
+      nameUrl: "plumbing",
       urlImage:
-        "https://images.unsplash.com/photo-1761839258671-6495fdc188b3?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      sectionTitle: "Servicio de Plomería",
+        "https://www.jkfm.com.au/wp-content/uploads/shutterstock_1024475122-scaled.jpg",
+      sectionTitle: "Plumbing Services",
       sectionSubtitle:
-        "Soluciones integrales de plomería para su hogar o negocio.",
-      subTitle: "Expertos en Plomería",
+        "Comprehensive plumbing solutions for your home or business.",
+      subTitle: "Plumbing Experts",
       subText:
-        "Desde reparaciones menores hasta instalaciones completas, nuestro equipo de plomeros certificados garantiza un trabajo de calidad.",
+        "From minor repairs to full installations, our certified plumbers ensure quality work.",
       items: [
         {
           id: 1,
-          title: "Reparación de Fugas",
+          title: "Leak Repairs",
           description:
-            "Identificación y reparación eficiente de fugas en tuberías y grifos.",
+            "Efficient identification and repair of pipe and faucet leaks.",
           image: "/images/plumbing-leaks.jpg",
-          cta: "Solicitar Servicio",
+          cta: "Request Service",
         },
         {
           id: 2,
-          title: "Instalación de Tuberías",
+          title: "Pipe Installation",
           description:
-            "Instalación profesional de sistemas de tuberías para construcciones nuevas o renovaciones.",
+            "Professional installation of pipe systems for new builds or renovations.",
           image: "/images/plumbing-pipes.jpg",
-          cta: "Solicitar Servicio",
+          cta: "Request Service",
         },
         {
           id: 3,
-          title: "Desatascos de Drenajes",
+          title: "Drain Unclogging",
           description:
-            "Servicio rápido y efectivo para desatascar drenajes y desagües.",
+            "Fast and effective service to unclog drains and pipes.",
           image: "/images/plumbing-drainage.jpg",
-          cta: "Solicitar Servicio",
+          cta: "Request Service",
         },
       ],
     },
     {
-      nameUrl: "construccion",
+      nameUrl: "construction",
       urlImage:
-        "https://images.unsplash.com/photo-1761839258671-6495fdc188b3?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      sectionTitle: "Servicio de Construcción",
+        "https://media.istockphoto.com/id/1657566602/photo/two-construction-workers-working-together-on-an-apartment-renovation.jpg?s=612x612&w=0&k=20&c=9U8I8t_7rljrVhCCQHACecXooE0_iJ7bTvlXp7WDNXs=",
+      sectionTitle: "Construction Services",
       sectionSubtitle:
-        "Construimos sus sueños con calidad, eficiencia y atención al detalle.",
-      subTitle: "Proyectos a Medida",
+        "We build your dreams with quality, efficiency, and attention to detail.",
+      subTitle: "Tailored Projects",
       subText:
-        "Desde la planificación hasta la ejecución final, nos encargamos de cada etapa de su proyecto de construcción.",
+        "From planning to final execution, we handle every stage of your construction project.",
       items: [
         {
           id: 1,
-          title: "Construcción Residencial",
+          title: "Residential Construction",
           description:
-            "Creación de viviendas unifamiliares y multifamiliares adaptadas a sus preferencias.",
+            "Development of single-family and multi-family homes tailored to your preferences.",
           image: "/images/construction-residential.jpg",
-          cta: "Iniciar Proyecto",
+          cta: "Start Project",
         },
         {
           id: 2,
-          title: "Construcción Comercial",
+          title: "Commercial Construction",
           description:
-            "Desarrollo de espacios comerciales funcionales y estéticos para su negocio.",
+            "Development of functional and aesthetic commercial spaces for your business.",
           image: "/images/construction-commercial.jpg",
-          cta: "Iniciar Proyecto",
+          cta: "Start Project",
         },
         {
           id: 3,
-          title: "Remodelaciones y Ampliaciones",
+          title: "Remodeling and Additions",
           description:
-            "Transformamos y ampliamos sus espacios existentes, dándoles una nueva vida.",
+            "We transform and expand your existing spaces, giving them new life.",
           image: "/images/construction-remodel.jpg",
-          cta: "Iniciar Proyecto",
+          cta: "Start Project",
         },
       ],
     },

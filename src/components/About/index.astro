@@ -1,34 +1,75 @@
 ---
 import Button from "../Button/index.astro";
+import DineroIcon from "../../assets/icons8-dinero-50.png";
+import ExperienciaIcon from "../../assets/icons8-experiencia-50.png";
+import RelojIcon from "../../assets/icons8-reloj-50.png";
+import GarantiaIcon from "../../assets/icons8-garantia-50.png";
 ---
 
-<section class="flex flex-col items-center justify-center p-10">
-  <article
-    class="w-full min-h-[530px] bg-gray-500 flex flex-col justify-center items-center"
-  >
-    <div class="w-full max-w-[1160px]">
-      <h2 class="font-bold text-[40px] mb-5">Porque Elegirnos?</h2>
-      <ul class="list-disc pl-5 flex flex-col gap-5">
-        <li class="font-normal">Atencion rapida y directa</li>
-        <li>Presupuestos claros y sin sorpresas</li>
-        <li>Profesionales con experiencia comprobada</li>
-        <li>Resultados de calidad garantizada</li>
-      </ul>
-    </div>
-  </article>
-
-  <article
-    class="w-full min-h-[250px] flex flex-row items-center justify-between p-10 bg-gradient-to-r from-[#000000] via-[#000000] to-[#ffffff00]"
-  >
-    <div class="flex flex-col px-[100px]">
-      <h2 class="text-white text-[40px]">Solicita el servicio!</h2>
-      <p class="text-white max-w-[734px] text-[20px]">
-        Contactanos ahora mismo y recibe una respuesta rapida y atencion
-        personalizada.
-      </p>
-    </div>
-    <div class="w-full max-w-[460px]">
-      <Button text="Solicitar presupuesto" />
+<section class="flex flex-col items-center justify-center p-10 bg-white">
+  <article class="w-full min-h-132.5 flex flex-col justify-center px-10">
+    <div class="w-full">
+      <h2 class="font-bold text-5xl mb-5 w-full text-sky-700">
+        Why Choose Us?
+      </h2>
+      <!-- <ul class="flex flex-row justify-between">
+        <li class="font-normal">Fast and direct attention</li>
+        <li>Clear budgets without surprises</li>
+        <li>Professionals with proven experience</li>
+        <li>Quality results guaranteed</li>
+      </ul> -->
+      <div class="flex flex-row w-full justify-around gap-5">
+        <div
+          class="flex w-full flex-col items-center px-5 max-w-sm rounded-2xl border-sky-700 backdrop-blur-sm bg-white/80 shadow-lg shadow-sky-800"
+        >
+          <img src={DineroIcon.src} class="h-12 w-12 my-5" />
+          <p class="mb-4 text-xl font-semibold text-center">
+            We are committed to providing fast and direct attention to all our
+            clients.
+          </p>
+        </div>
+        <div
+          class="flex w-full flex-col items-center px-5 max-w-sm rounded-2xl border-sky-700 backdrop-blur-sm bg-white/80 shadow-lg shadow-sky-800"
+        >
+          <img src={ExperienciaIcon.src} class="h-12 w-12 my-5" />
+          <p class="mb-4 text-xl font-semibold text-center">
+            Our team of professionals has proven experience in the field,
+            ensuring quality results that meet your expectations.
+          </p>
+        </div>
+        <div
+          class="flex w-full flex-col items-center px-5 max-w-sm rounded-2xl border-sky-700 backdrop-blur-sm bg-white/80 shadow-lg shadow-sky-800"
+        >
+          <img src={RelojIcon.src} class="h-12 w-12 my-5" />
+          <p class="mb-4 text-xl font-semibold text-center">
+            We offer clear budgets without surprises, so you can plan your
+            projects with confidence.
+          </p>
+        </div>
+        <div
+          class="flex w-full flex-col items-center px-5 max-w-sm rounded-2xl border-sky-700 backdrop-blur-sm bg-white/80 shadow-lg shadow-sky-800"
+        >
+          <img src={GarantiaIcon.src} class="h-12 w-12 my-5" />
+          <p class="mb-4 text-xl font-semibold text-center">
+            Choose us for a reliable and efficient service that prioritizes your
+            satisfaction.
+          </p>
+        </div>
+      </div>
     </div>
   </article>
 </section>
+
+<article
+  class="w-full min-h-[250px] flex flex-row items-center justify-between p-10 bg-gradient-to-r from-sky-700 via-sky-700 to-[#ffffff00]"
+>
+  <div class="flex flex-col px-[100px]">
+    <p class="text-white max-w-[734px] text-3xl font-bold">
+      Contactanos ahora mismo y recibe una respuesta rapida y atencion
+      personalizada.
+    </p>
+  </div>
+  <div class="w-full max-w-[460px]">
+    <Button text="Ask for a quote" />
+  </div>
+</article>
