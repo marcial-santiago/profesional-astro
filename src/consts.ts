@@ -11,7 +11,7 @@ export const SERVICE_DATA: ServiceAll = {
     {
       nameUrl: "cleaning",
       urlImage:
-        "https://images.unsplash.com/photo-1761839258671-6495fdc188b3?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://media.istockphoto.com/id/1417833187/photo/professional-cleaner-vacuuming-a-carpet.jpg?s=612x612&w=0&k=20&c=5h8NBR190d46Ni4MclqJ7Zf9ZOtf3TM3gPRJaHUdMjk=",
       sectionTitle: "Cleaning Services",
       sectionSubtitle:
         "We offer professional cleaning services for homes and offices.",
@@ -56,7 +56,7 @@ export const SERVICE_DATA: ServiceAll = {
     {
       nameUrl: "plumbing",
       urlImage:
-        "https://images.unsplash.com/photo-1761839258671-6495fdc188b3?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://www.jkfm.com.au/wp-content/uploads/shutterstock_1024475122-scaled.jpg",
       sectionTitle: "Plumbing Services",
       sectionSubtitle:
         "Comprehensive plumbing solutions for your home or business.",
@@ -93,7 +93,7 @@ export const SERVICE_DATA: ServiceAll = {
     {
       nameUrl: "construction",
       urlImage:
-        "https://images.unsplash.com/photo-1761839258671-6495fdc188b3?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://media.istockphoto.com/id/1657566602/photo/two-construction-workers-working-together-on-an-apartment-renovation.jpg?s=612x612&w=0&k=20&c=9U8I8t_7rljrVhCCQHACecXooE0_iJ7bTvlXp7WDNXs=",
       sectionTitle: "Construction Services",
       sectionSubtitle:
         "We build your dreams with quality, efficiency, and attention to detail.",
