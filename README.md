@@ -1,62 +1,58 @@
-# Astro Starter Kit: Blog
+# Guía de instalación y configuración
 
-```sh
-pnpm create astro@latest -- --template blog
+## 1. Instalar dependencias
+
+Ejecutar el siguiente comando para instalar los paquetes necesarios:
+
+```bash
+pnpm i
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+````
 
-Features:
+---
 
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and OpenGraph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
+## 2. Configuración de variables de entorno
 
-## 🚀 Project Structure
+Copiar el archivo `example.env` y renombrarlo como `.env`.
+Luego, completar los valores requeridos dentro de `.env`.
 
-Inside of your Astro project, you'll see the following folders and files:
+---
 
-```text
-├── public/
-├── src/
-│   ├── components/
-│   ├── content/
-│   ├── layouts/
-│   └── pages/
-├── astro.config.mjs
-├── README.md
-├── package.json
-└── tsconfig.json
+## 3. Base de datos con Docker
+
+Levantar el contenedor de la base de datos con:
+
+```bash
+docker compose up -d
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+---
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## 4. Alternativa de conexión
 
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
+En lugar de usar Docker, se puede configurar la URI de conexión hacia:
+DATABASE_URL=
 
-Any static assets, like images, can be placed in the `public/` directory.
+- Una instancia de **Supabase**
+- Una base de datos en **Neon**
+- Una base de datos local ya existente
 
-## 🧞 Commands
+---
 
-All commands are run from the root of the project, from a terminal:
+## 5. Sincronizar Prisma
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
+Ejecutar el siguiente comando para aplicar el esquema de Prisma en la base de datos:
 
-## 👀 Want to learn more?
+```bash
+pnpm prisma db push
+```
 
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+---
 
-## Credit
+## ✅ Resultado
 
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
+Con estos pasos, la aplicación queda conectada a la base de datos y lista para funcionar.
+
+```
+````
