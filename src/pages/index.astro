@@ -4,6 +4,7 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
 import ServicesCards from "../components/ServicesCards/index.astro";
 import About from "../components/About/index.astro";
 import PrincipalForm from "../components/PrincipalForm/index.astro";
+import Testimonial from "../components/Testimonial/index.astro";
 ---
 
 <BaseLayaout>
@@ -13,9 +14,11 @@ import PrincipalForm from "../components/PrincipalForm/index.astro";
   <section id="servicios">
     <ServicesCards />
   </section>
+  <Testimonial />
   <section id="nosotros">
     <About />
   </section>
+
   <section id="contacto">
     <PrincipalForm />
   </section>
