@@ -1,33 +1,227 @@
 ---
 import HeaderLink from "./HeaderLink.astro";
 import Button from "../components/Button/index.astro";
+
+const navLinks = [
+  { href: "/#inicio", label: "Home" },
+  { href: "/#servicios", label: "Our Services" },
+  { href: "/#nosotros", label: "About Us" },
+  { href: "/#contacto", label: "Contact Us" },
+];
 ---
 
-<header class="relative top-0 z-50 shadow-sm bg-sky-700">
-  <nav class="flex flex-row items-center px-10 py-4">
-    <a href="/"><h2 class="text-2xl font-bold mr-8 text-white">LOGO</h2></a>
-    <div class="flex flex-row items-center gap-5">
-      <HeaderLink
-        class="rounded-md p-2 border-b-2 border-transparent hover:bg-white hover:border-blue-600 hover:text-sky-600 transition-all duration-500 text-white"
-        href="/#inicio">Home</HeaderLink
+<header
+  class="h-[100px] fixed top-0 left-0 right-0 z-50 bg-sky-700/95 backdrop-blur-md border-b border-sky-600/20 shadow-lg transition-all duration-300"
+  id="main-header"
+>
+  <nav class="container mx-auto px-6 lg:px-10">
+    <div class="flex items-center justify-between py-4">
+      <!-- Logo -->
+      <a
+        href="/"
+        class="group flex items-center gap-3 transition-transform duration-300 hover:scale-105"
       >
-      <HeaderLink
-        class="rounded-md p-2 border-b-2 border-transparent hover:bg-white hover:border-blue-600 hover:text-sky-600 transition-all duration-500 text-white"
-        href="/#servicios">Our Services</HeaderLink
-      >
-      <HeaderLink
-        class="rounded-md p-2 border-b-2 border-transparent hover:bg-white hover:border-blue-600 hover:text-sky-600 transition-all duration-500 text-white"
-        href="/#nosotros">About Us</HeaderLink
-      >
-      <HeaderLink
-        class="rounded-md p-2 border-b-2 border-transparent hover:bg-white hover:border-blue-600 hover:text-sky-600 transition-all duration-500 text-white"
-        href="/#contacto">Contact Us</HeaderLink
-      >
-    </div>
-    <div class="ml-auto">
-      <a href="/#contacto">
-        <Button text="Ask for a quote" />
+        <div class="relative">
+          <div
+            class="absolute inset-0 bg-white rounded-lg blur opacity-50 group-hover:opacity-75 transition-opacity"
+          >
+          </div>
+          <div class="relative bg-white p-2 rounded-lg">
+            <svg
+              class="w-8 h-8 text-sky-700"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              ></path>
+            </svg>
+          </div>
+        </div>
+        <div class="hidden sm:block">
+          <h2 class="text-2xl font-bold text-white leading-none">Roldans</h2>
+          <p class="text-xs text-sky-200">Home Services</p>
+        </div>
       </a>
+
+      <!-- Desktop Navigation -->
+      <div class="hidden lg:flex items-center gap-1">
+        {
+          navLinks.map((link) => (
+            <HeaderLink
+              class="relative px-4 py-2 text-white font-medium transition-all duration-300 hover:text-sky-100 group"
+              href={link.href}
+            >
+              <span class="relative z-10">{link.label}</span>
+              <span class="absolute inset-0 bg-white/10 rounded-lg scale-0 group-hover:scale-100 transition-transform duration-300" />
+              <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-white group-hover:w-3/4 transition-all duration-300" />
+            </HeaderLink>
+          ))
+        }
+      </div>
+
+      <!-- CTA + Mobile Menu Button -->
+      <div class="flex items-center gap-4">
+        <!-- Desktop CTA Button -->
+        <div class="hidden md:block">
+          <a href="/#contacto">
+            <Button text="Get a Quote" />
+          </a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button
+          id="mobile-menu-button"
+          class="lg:hidden relative w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-lg transition-colors duration-300"
+          aria-label="Toggle menu"
+          aria-expanded="false"
+        >
+          <svg
+            id="menu-icon-open"
+            class="w-6 h-6 transition-transform duration-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+          <svg
+            id="menu-icon-close"
+            class="w-6 h-6 absolute hidden transition-transform duration-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <div
+      id="mobile-menu"
+      class="lg:hidden max-h-0 overflow-hidden transition-all duration-500 ease-in-out"
+    >
+      <div class="py-4 space-y-2 border-t border-white/10">
+        {
+          navLinks.map((link) => (
+            <a
+              href={link.href}
+              class="block px-4 py-3 text-white font-medium hover:bg-white/10 rounded-lg transition-all duration-300 hover:translate-x-2"
+            >
+              {link.label}
+            </a>
+          ))
+        }
+        <!-- Mobile CTA -->
+        <div class="pt-4 px-4">
+          <a href="/#contacto" class="block">
+            <Button text="Get a Quote" />
+          </a>
+        </div>
+      </div>
     </div>
   </nav>
 </header>
+
+<!-- Spacer to prevent content from hiding under fixed header -->
+<div class="h-20"></div>
+
+<script>
+  // Mobile menu toggle
+  const mobileMenuButton = document.getElementById("mobile-menu-button");
+  const mobileMenu = document.getElementById("mobile-menu");
+  const menuIconOpen = document.getElementById("menu-icon-open");
+  const menuIconClose = document.getElementById("menu-icon-close");
+
+  let isMenuOpen = false;
+
+  mobileMenuButton?.addEventListener("click", () => {
+    isMenuOpen = !isMenuOpen;
+
+    if (isMenuOpen) {
+      mobileMenu?.style.setProperty(
+        "max-height",
+        `${mobileMenu.scrollHeight}px`
+      );
+      menuIconOpen?.classList.add("hidden");
+      menuIconClose?.classList.remove("hidden");
+      mobileMenuButton?.setAttribute("aria-expanded", "true");
+    } else {
+      mobileMenu?.style.setProperty("max-height", "0");
+      menuIconOpen?.classList.remove("hidden");
+      menuIconClose?.classList.add("hidden");
+      mobileMenuButton?.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  // Close mobile menu when clicking on a link
+  const mobileLinks = mobileMenu?.querySelectorAll("a");
+  mobileLinks?.forEach((link) => {
+    link.addEventListener("click", () => {
+      isMenuOpen = false;
+      mobileMenu?.style.setProperty("max-height", "0");
+      menuIconOpen?.classList.remove("hidden");
+      menuIconClose?.classList.add("hidden");
+      mobileMenuButton?.setAttribute("aria-expanded", "false");
+    });
+  });
+
+  // Header scroll effect
+  let lastScroll = 0;
+  const header = document.getElementById("main-header");
+
+  window.addEventListener("scroll", () => {
+    const currentScroll = window.pageYOffset;
+
+    if (currentScroll <= 0) {
+      header?.classList.remove("shadow-xl");
+      header?.classList.add("shadow-lg");
+    } else {
+      header?.classList.remove("shadow-lg");
+      header?.classList.add("shadow-xl");
+    }
+
+    // Optional: Hide header on scroll down, show on scroll up
+    // if (currentScroll > lastScroll && currentScroll > 100) {
+    //   header?.style.setProperty('transform', 'translateY(-100%)');
+    // } else {
+    //   header?.style.setProperty('transform', 'translateY(0)');
+    // }
+
+    lastScroll = currentScroll;
+  });
+</script>
+
+<style>
+  /* Smooth scroll behavior */
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px;
+  }
+
+  /* Mobile menu animation */
+  #mobile-menu {
+    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Header transition */
+  #main-header {
+    transition:
+      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.3s ease;
+  }
+</style>

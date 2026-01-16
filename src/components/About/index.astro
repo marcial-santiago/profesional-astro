@@ -4,72 +4,196 @@ import DineroIcon from "../../assets/icons8-dinero-50.png";
 import ExperienciaIcon from "../../assets/icons8-experiencia-50.png";
 import RelojIcon from "../../assets/icons8-reloj-50.png";
 import GarantiaIcon from "../../assets/icons8-garantia-50.png";
+
+const features = [
+  {
+    icon: DineroIcon,
+    title: "Transparent Pricing",
+    description: "Clear budgets without surprises, so you can plan your projects with confidence and peace of mind.",
+    highlight: "No Hidden Fees"
+  },
+  {
+    icon: ExperienciaIcon,
+    title: "Proven Experience",
+    description: "Our team of professionals has years of proven experience, ensuring quality results that exceed expectations.",
+    highlight: "Expert Team"
+  },
+  {
+    icon: RelojIcon,
+    title: "Fast Response",
+    description: "We are committed to providing fast and direct attention to all our clients, when you need it most.",
+    highlight: "24/7 Available"
+  },
+  {
+    icon: GarantiaIcon,
+    title: "Quality Guaranteed",
+    description: "Choose us for a reliable and efficient service that prioritizes your satisfaction above all else.",
+    highlight: "100% Satisfaction"
+  }
+];
 ---
 
-<section class="flex flex-col items-center justify-center p-10 bg-white">
-  <article class="w-full min-h-132.5 flex flex-col justify-center px-10">
-    <div class="w-full">
-      <h2 class="font-bold text-5xl mb-5 w-full text-sky-700">
+<!-- Why Choose Us Section -->
+<section class="relative py-20 lg:py-32 px-6 lg:px-10 bg-gradient-to-b from-white via-sky-50 to-white overflow-hidden">
+  <!-- Decorative Background -->
+  <div class="absolute inset-0 opacity-5 pointer-events-none">
+    <div class="absolute top-0 left-0 w-96 h-96 bg-sky-500 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 bg-sky-700 rounded-full blur-3xl"></div>
+  </div>
+
+  <div class="relative z-10 container mx-auto max-w-7xl">
+    <!-- Header -->
+    <header class="text-center mb-16 lg:mb-20">
+      <div class="inline-flex items-center gap-2 bg-sky-100 border border-sky-200 rounded-full px-5 py-2 mb-6">
+        <svg class="w-5 h-5 text-sky-600" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        <span class="text-sky-700 text-sm font-medium tracking-wide">Our Advantages</span>
+      </div>
+      
+      <h2 class="text-5xl md:text-6xl lg:text-7xl font-bold text-sky-700 mb-6">
         Why Choose Us?
       </h2>
-      <!-- <ul class="flex flex-row justify-between">
-        <li class="font-normal">Fast and direct attention</li>
-        <li>Clear budgets without surprises</li>
-        <li>Professionals with proven experience</li>
-        <li>Quality results guaranteed</li>
-      </ul> -->
-      <div class="flex flex-row w-full justify-around gap-5">
-        <div
-          class="flex w-full flex-col items-center px-5 max-w-sm rounded-2xl border-sky-700 backdrop-blur-sm bg-white/80 shadow-lg shadow-sky-800"
+      <p class="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto">
+        We combine expertise, transparency, and dedication to deliver exceptional results every time
+      </p>
+    </header>
+
+    <!-- Features Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
+      {features.map((feature, index) => (
+        <article 
+          class="group relative bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-sky-100 hover:border-sky-300"
+          style={`animation: fadeInUp 0.6s ease-out ${index * 0.1}s both;`}
         >
-          <img src={DineroIcon.src} class="h-12 w-12 my-5" />
-          <p class="mb-4 text-xl font-semibold text-center">
-            We are committed to providing fast and direct attention to all our
-            clients.
+          <!-- Icon Container -->
+          <div class="relative mb-6">
+            <div class="absolute inset-0 bg-sky-500 opacity-10 rounded-2xl blur-xl group-hover:opacity-20 transition-opacity duration-500"></div>
+            <div class="relative bg-gradient-to-br from-sky-400 to-sky-600 p-4 rounded-2xl inline-block transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+              <img 
+                src={feature.icon.src} 
+                alt={feature.title}
+                class="h-12 w-12 brightness-0 invert" 
+              />
+            </div>
+            <!-- Badge -->
+            <div class="absolute -top-2 -right-2 bg-sky-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+              {feature.highlight}
+            </div>
+          </div>
+
+          <!-- Content -->
+          <h3 class="text-2xl font-bold text-gray-800 mb-4 group-hover:text-sky-600 transition-colors duration-300">
+            {feature.title}
+          </h3>
+          <p class="text-gray-600 leading-relaxed">
+            {feature.description}
           </p>
+
+          <!-- Hover Effect Line -->
+          <div class="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-sky-400 to-sky-600 group-hover:w-full transition-all duration-500 rounded-full"></div>
+        </article>
+      ))}
+    </div>
+
+    <!-- Stats Section (Optional Enhancement) -->
+    <div class="bg-gradient-to-r from-sky-600 to-sky-700 rounded-3xl p-8 lg:p-12 shadow-2xl">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div class="space-y-2">
+          <div class="text-4xl lg:text-5xl font-bold text-white">500+</div>
+          <div class="text-sky-100 text-sm lg:text-base">Happy Clients</div>
         </div>
-        <div
-          class="flex w-full flex-col items-center px-5 max-w-sm rounded-2xl border-sky-700 backdrop-blur-sm bg-white/80 shadow-lg shadow-sky-800"
-        >
-          <img src={ExperienciaIcon.src} class="h-12 w-12 my-5" />
-          <p class="mb-4 text-xl font-semibold text-center">
-            Our team of professionals has proven experience in the field,
-            ensuring quality results that meet your expectations.
-          </p>
+        <div class="space-y-2">
+          <div class="text-4xl lg:text-5xl font-bold text-white">15+</div>
+          <div class="text-sky-100 text-sm lg:text-base">Years Experience</div>
         </div>
-        <div
-          class="flex w-full flex-col items-center px-5 max-w-sm rounded-2xl border-sky-700 backdrop-blur-sm bg-white/80 shadow-lg shadow-sky-800"
-        >
-          <img src={RelojIcon.src} class="h-12 w-12 my-5" />
-          <p class="mb-4 text-xl font-semibold text-center">
-            We offer clear budgets without surprises, so you can plan your
-            projects with confidence.
-          </p>
+        <div class="space-y-2">
+          <div class="text-4xl lg:text-5xl font-bold text-white">98%</div>
+          <div class="text-sky-100 text-sm lg:text-base">Satisfaction Rate</div>
         </div>
-        <div
-          class="flex w-full flex-col items-center px-5 max-w-sm rounded-2xl border-sky-700 backdrop-blur-sm bg-white/80 shadow-lg shadow-sky-800"
-        >
-          <img src={GarantiaIcon.src} class="h-12 w-12 my-5" />
-          <p class="mb-4 text-xl font-semibold text-center">
-            Choose us for a reliable and efficient service that prioritizes your
-            satisfaction.
+        <div class="space-y-2">
+          <div class="text-4xl lg:text-5xl font-bold text-white">24/7</div>
+          <div class="text-sky-100 text-sm lg:text-base">Support Available</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Banner -->
+<section class="relative overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-r from-sky-700 via-sky-600 to-transparent"></div>
+  
+  <!-- Decorative Elements -->
+  <div class="absolute inset-0 opacity-10">
+    <div class="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 left-1/3 w-64 h-64 bg-white rounded-full blur-2xl"></div>
+  </div>
+
+  <div class="relative z-10 container mx-auto px-6 lg:px-10 py-16 lg:py-20">
+    <div class="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12">
+      <!-- Text Content -->
+      <div class="flex-1 text-center lg:text-left space-y-6 lg:max-w-2xl">
+        <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-4 py-2 mb-2">
+          <span class="relative flex h-3 w-3">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+          </span>
+          <span class="text-white text-sm font-medium">Disponible ahora</span>
+        </div>
+
+        <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
+          ¿Listo para comenzar tu proyecto?
+        </h2>
+        <p class="text-xl md:text-2xl text-white/90 leading-relaxed">
+          Contáctanos ahora mismo y recibe una respuesta rápida con atención personalizada de nuestros expertos.
+        </p>
+
+        <!-- Trust Indicators -->
+        <div class="flex flex-wrap items-center gap-6 pt-4 justify-center lg:justify-start">
+          <div class="flex items-center gap-2 text-white">
+            <svg class="w-5 h-5 text-sky-300" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+            </svg>
+            <span class="text-sm font-medium">5.0 Rating</span>
+          </div>
+          <div class="flex items-center gap-2 text-white">
+            <svg class="w-5 h-5 text-sky-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            <span class="text-sm font-medium">Garantía Incluida</span>
+          </div>
+          <div class="flex items-center gap-2 text-white">
+            <svg class="w-5 h-5 text-sky-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="text-sm font-medium">Respuesta en 24hrs</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA Button Section -->
+      <div class="flex-shrink-0 w-full lg:w-auto">
+        <div class="bg-black/70 backdrop-blur-md border border-white/20 rounded-2xl p-8 text-center">
+          <Button text="Ask for a quote" />
+          <p class="text-white/80 text-sm mt-4">
+            O llámanos al <a href="tel:+1234567890" class="font-bold text-white hover:text-sky-300 transition-colors">+123 456 7890</a>
           </p>
         </div>
       </div>
     </div>
-  </article>
+  </div>
 </section>
 
-<article
-  class="w-full min-h-[250px] flex flex-row items-center justify-between p-10 bg-gradient-to-r from-sky-700 via-sky-700 to-[#ffffff00]"
->
-  <div class="flex flex-col px-[100px]">
-    <p class="text-white max-w-[734px] text-3xl font-bold">
-      Contactanos ahora mismo y recibe una respuesta rapida y atencion
-      personalizada.
-    </p>
-  </div>
-  <div class="w-full max-w-[460px]">
-    <Button text="Ask for a quote" />
-  </div>
-</article>
+<style>
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
