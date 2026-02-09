@@ -1,26 +1,27 @@
 import type { APIRoute } from "astro";
-import { z } from "zod";
+import { contactSchema } from "../../services/validation.service";
 import { prisma } from "../../lib/prisma";
+import {
+  errorResponse,
+  successResponse,
+  createdResponse,
+  internalErrorResponse,
+} from "../../utils/response.utils";
+import { ERROR_MESSAGES } from "../../constants";
 
 export const prerender = false;
-
-const messageSchema = z.object({
-  nombre: z.string().trim().min(3).max(80),
-  telefono: z.string(),
-  servicio: z.enum(["reparacion", "instalacion", "mantenimiento"]),
-  mensaje: z.string().trim().min(10).max(1000),
-});
 
 export const POST: APIRoute = async ({ request }) => {
   const contentType = request.headers.get("content-type") || "";
   if (!contentType.includes("multipart/form-data")) {
-    return json({ error: "Invalid content type" }, 400);
+    return errorResponse("Invalid content type", 400);
   }
 
   const formData = await request.formData();
 
+  // Honeypot check
   if (formData.get("company")) {
-    return json({ ok: true }, 200);
+    return successResponse({ ok: true });
   }
 
   const rawData = {
@@ -30,16 +31,11 @@ export const POST: APIRoute = async ({ request }) => {
     mensaje: String(formData.get("mensaje") ?? ""),
   };
 
-  const parsed = messageSchema.safeParse(rawData);
+  const parsed = contactSchema.safeParse(rawData);
 
   if (!parsed.success) {
     console.log("Validation errors:", parsed.error.format());
-    return json(
-      {
-        error: "Datos inválidos",
-      },
-      400
-    );
+    return errorResponse(ERROR_MESSAGES.INVALID_DATA, 400);
   }
 
   try {
@@ -48,18 +44,8 @@ export const POST: APIRoute = async ({ request }) => {
     });
   } catch (err) {
     console.error("DB error:", err);
-    return json({ error: "Error al guardar el mensaje" }, 500);
+    return internalErrorResponse(ERROR_MESSAGES.DATABASE_ERROR);
   }
 
-  return json({ ok: true }, 201);
+  return createdResponse({ ok: true });
 };
-
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-store",
-    },
-  });
-}

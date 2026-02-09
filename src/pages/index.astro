@@ -4,6 +4,7 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
 import ServicesCards from "../components/ServicesCards/index.astro";
 import About from "../components/About/index.astro";
 import PrincipalForm from "../components/PrincipalForm/index.astro";
+import VisitScheduler from "../components/VisitScheduler.astro";
 ---
 
 <BaseLayaout>
@@ -15,6 +16,20 @@ import PrincipalForm from "../components/PrincipalForm/index.astro";
   </section>
   <section id="nosotros">
     <About />
+  </section>
+  <section id="agenda" class="py-20 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-slate-900 md:text-4xl mb-4">
+          Agenda tu Visita Técnica
+        </h2>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+          Selecciona el servicio y el horario que mejor te convenga.
+          Confirmaremos tu cita al instante.
+        </p>
+      </div>
+      <VisitScheduler />
+    </div>
   </section>
   <section id="contacto">
     <PrincipalForm />

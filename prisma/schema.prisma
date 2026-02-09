@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
+  output   = "./client"
 }
 
 datasource db {
@@ -20,4 +20,40 @@ model Message {
   servicio  String
   mensaje   String
   createdAt DateTime @default(now())
+}
+
+model WorkType {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  duration    Int      @default(60) // Duration in minutes
+  visits      Visit[]
+  isActive    Boolean  @default(true)
+}
+
+model Visit {
+  id         Int      @id @default(autoincrement())
+  nombre     String
+  telefono   String
+  email      String?
+  date       DateTime // The date and time of the visit
+  workTypeId Int
+  workType   WorkType @relation(fields: [workTypeId], references: [id])
+  mensaje    String?
+  status     String   @default("PENDING") // PENDING, CONFIRMED, CANCELLED
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Availability {
+  id        Int    @id @default(autoincrement())
+  dayOfWeek Int    // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  startTime String // Format "HH:mm"
+  endTime   String // Format "HH:mm"
+}
+
+model BlockedDate {
+  id     Int      @id @default(autoincrement())
+  date   DateTime @unique
+  reason String?
 }

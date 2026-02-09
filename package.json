@@ -9,6 +9,7 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/check": "^0.9.6",
     "@astrojs/mdx": "^4.3.13",
     "@astrojs/node": "^9.5.1",
     "@astrojs/rss": "^4.0.14",
@@ -22,6 +23,7 @@
     "pg": "^8.16.3",
     "sharp": "^0.34.3",
     "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.3",
     "zod": "^4.3.5"
   },
   "devDependencies": {

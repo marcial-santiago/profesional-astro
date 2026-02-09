@@ -4,8 +4,17 @@ export const prerender = false;
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   const body = await request.json();
-  console.log(body);
   const { user, password } = body ?? {};
+
+  if (!import.meta.env.ADMIN_USER || !import.meta.env.ADMIN_PASSWORD) {
+    console.error("ADMIN_USER or ADMIN_PASSWORD not set in environment");
+    return new Response(
+      JSON.stringify({ error: "Server configuration error" }),
+      {
+        status: 500,
+      },
+    );
+  }
 
   if (
     user !== import.meta.env.ADMIN_USER ||
