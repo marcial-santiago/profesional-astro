@@ -45,6 +45,25 @@ export const VALIDATION_RULES = {
 } as const;
 
 export const DEFAULT_SLOT_DURATION = 60; // minutes
+
+// Allowed origins for CSRF origin checks.
+// Set ALLOWED_ORIGINS in .env as comma-separated list for production.
+// Falls back to localhost for local development.
+function parseAllowedOrigins(): string[] {
+  const env = import.meta.env.ALLOWED_ORIGINS ?? "";
+  const fromEnv = env
+    .split(",")
+    .map((o: string) => o.trim())
+    .filter(Boolean);
+  return fromEnv.length > 0
+    ? fromEnv
+    : ["http://localhost:4321", "http://localhost:3000"];
+}
+
+export const ALLOWED_ORIGINS: string[] = parseAllowedOrigins();
+
+// Timezone for datetime calculations. Set APP_TIMEZONE in .env (e.g. "America/Argentina/Buenos_Aires")
+export const APP_TIMEZONE = import.meta.env.APP_TIMEZONE ?? "America/Argentina/Buenos_Aires";
 export const DAYS_OF_WEEK = [
   "Domingo",
   "Lunes",

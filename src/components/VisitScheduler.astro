@@ -710,26 +710,20 @@ const { class: className } = Astro.props;
         ?.addEventListener("click", () => this.goToStep(1));
 
       document.getElementById("next-2")?.addEventListener("click", () => {
-        this.goToStep(3);
-        this.updateSummary();
+        const { selectedWorkType, selectedDate, selectedTime } = this.state.getState();
+        if (!selectedWorkType || !selectedDate || !selectedTime) return;
+
+        // Save selection to sessionStorage and redirect to checkout
+        sessionStorage.setItem("checkout", JSON.stringify({
+          workTypeId: selectedWorkType.id,
+          workTypeName: selectedWorkType.name,
+          workTypeDuration: selectedWorkType.duration,
+          date: selectedDate,
+          time: selectedTime,
+        }));
+
+        window.location.href = "/checkout";
       });
-
-      document
-        .getElementById("back-3")
-        ?.addEventListener("click", () => this.goToStep(2));
-
-      const form = document.getElementById("booking-form") as HTMLFormElement;
-      form?.addEventListener("submit", (e) => this.handleSubmit(e));
-
-      const nameInput = document.getElementById("nombre") as HTMLInputElement;
-      const phoneInput = document.getElementById(
-        "telefono",
-      ) as HTMLInputElement;
-
-      nameInput?.addEventListener("blur", () => this.validateField(nameInput));
-      phoneInput?.addEventListener("blur", () =>
-        this.validateField(phoneInput),
-      );
 
       document
         .getElementById("reset-scheduler")

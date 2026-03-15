@@ -11,121 +11,72 @@ export interface TimeSlot {
   available: boolean;
 }
 
+// Fixed business hours — 8am to 6pm, every day
+const BUSINESS_START_HOUR = 8;
+const BUSINESS_END_HOUR = 18;
+
 export const SlotService = {
   /**
-   * Get available time slots for a specific date and work type
+   * Get available time slots for a specific date and work type.
+   * Business hours are fixed: 8:00 — 18:00.
    */
   async getAvailableSlots(options: SlotOptions): Promise<string[]> {
     const { date, workTypeId } = options;
 
-    // Parse the date
-    const targetDate = new Date(date);
-    const dayOfWeek = targetDate.getDay();
-
     // 1. Check if the date is blocked
-    const blocked = await prisma.blockedDate.findUnique({
-      where: { date: new Date(date) },
+    const blocked = await prisma.blockedDate.findFirst({
+      where: {
+        date: {
+          gte: new Date(`${date}T00:00:00`),
+          lte: new Date(`${date}T23:59:59`),
+        },
+      },
     });
 
     if (blocked) {
       return [];
     }
 
-    // 2. Get availability for that day of week
-    const availability = await prisma.availability.findMany({
-      where: { dayOfWeek },
-    });
-
-    if (availability.length === 0) {
-      return [];
-    }
-
-    // 3. Get work type to know the duration
+    // 2. Get work type to know the duration
     const workType = await prisma.workType.findUnique({
       where: { id: workTypeId },
     });
 
     const slotDuration = workType?.duration || DEFAULT_SLOT_DURATION;
 
-    // 4. Get ALL existing visits for that day (regardless of work type)
-    // IMPORTANT: We block time slots occupied by ANY service to prevent double-booking
-    // Important: Parse the date string correctly to avoid timezone issues
+    // 3. Get ALL existing visits for that day
     const [year, month, day] = date.split("-").map(Number);
     const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
     const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
 
-    console.log(`[SlotService] Querying visits between:`, {
-      start: startOfDay.toISOString(),
-      end: endOfDay.toISOString(),
-    });
-
     const existingVisits = await prisma.visit.findMany({
       where: {
-        date: {
-          gte: startOfDay,
-          lte: endOfDay,
-        },
+        date: { gte: startOfDay, lte: endOfDay },
         status: { not: "CANCELLED" },
       },
       select: {
         date: true,
-        workType: {
-          select: {
-            duration: true,
-          },
-        },
+        workType: { select: { duration: true } },
       },
     });
 
-    // 5. Generate slots based on availability
+    // 4. Generate slots from fixed business hours
     const slots: string[] = [];
 
-    console.log(
-      `[SlotService] Generating slots for ${date}, workTypeId: ${workTypeId}`,
-    );
-    console.log(
-      `[SlotService] Found ${existingVisits.length} existing visits:`,
-      existingVisits.map((v: { date: any; workType: { duration: any } }) => ({
-        date: v.date,
-        duration: v.workType.duration,
-      })),
-    );
+    let current = new Date(year, month - 1, day, BUSINESS_START_HOUR, 0, 0, 0);
+    const end = new Date(year, month - 1, day, BUSINESS_END_HOUR, 0, 0, 0);
 
-    for (const avail of availability) {
-      const [startHour, startMin] = avail.startTime.split(":").map(Number);
-      const [endHour, endMin] = avail.endTime.split(":").map(Number);
+    while (current < end) {
+      const timeStr = current.toTimeString().substring(0, 5);
 
-      // Use the same date parsing method to avoid timezone issues
-      let current = new Date(year, month - 1, day, startHour, startMin, 0, 0);
-      const end = new Date(year, month - 1, day, endHour, endMin, 0, 0);
+      const isOccupied = this.isSlotOccupied(current, slotDuration, existingVisits);
 
-      while (current < end) {
-        const timeStr = current.toTimeString().substring(0, 5);
-
-        // Check if this slot conflicts with any existing visit
-        const isOccupied = this.isSlotOccupied(
-          current,
-          slotDuration,
-          existingVisits,
-        );
-
-        console.log(
-          `[SlotService] Slot ${timeStr}: ${isOccupied ? "OCCUPIED" : "AVAILABLE"}`,
-        );
-
-        if (!isOccupied) {
-          slots.push(timeStr);
-        }
-
-        // Move to next slot based on duration
-        current.setMinutes(current.getMinutes() + slotDuration);
+      if (!isOccupied) {
+        slots.push(timeStr);
       }
-    }
 
-    console.log(
-      `[SlotService] Returning ${slots.length} available slots:`,
-      slots,
-    );
+      current.setMinutes(current.getMinutes() + slotDuration);
+    }
 
     return slots;
   },
@@ -150,18 +101,8 @@ export const SlotService = {
       const visitEnd = new Date(visitStart);
       visitEnd.setMinutes(visitEnd.getMinutes() + visitDuration);
 
-      // Check if there's any overlap
-      // Overlap occurs if: slotStart < visitEnd AND slotEnd > visitStart
-      const hasOverlap = slotStart < visitEnd && slotEnd > visitStart;
-
-      if (hasOverlap) {
-        console.log(`[SlotService] OVERLAP DETECTED:`, {
-          slot: { start: slotStart.toISOString(), end: slotEnd.toISOString() },
-          visit: {
-            start: visitStart.toISOString(),
-            end: visitEnd.toISOString(),
-          },
-        });
+      // Overlap: slotStart < visitEnd AND slotEnd > visitStart
+      if (slotStart < visitEnd && slotEnd > visitStart) {
         return true;
       }
     }

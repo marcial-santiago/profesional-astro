@@ -6,6 +6,9 @@ import type { ServiceAll } from "./interfaces/services";
 export const SITE_TITLE = "Astro Blog";
 export const SITE_DESCRIPTION = "Welcome to my website!";
 
+// Default price in USD for any service not explicitly priced
+export const DEFAULT_SERVICE_PRICE = 10;
+
 export const SERVICE_DATA: ServiceAll = {
   services: [
     {
@@ -26,6 +29,7 @@ export const SERVICE_DATA: ServiceAll = {
             "Comprehensive home cleaning service, adaptable to your needs.",
           image: "/images/cleaning-residential.jpg",
           cta: "Request Quote",
+          price: 10,
         },
         {
           id: 2,
@@ -34,6 +38,7 @@ export const SERVICE_DATA: ServiceAll = {
             "We keep your workspace spotless, contributing to a productive environment.",
           image: "/images/cleaning-commercial.jpg",
           cta: "Request Quote",
+          price: 10,
         },
         {
           id: 3,
@@ -42,6 +47,7 @@ export const SERVICE_DATA: ServiceAll = {
             "A detailed service for thorough cleaning of every corner.",
           image: "/images/cleaning-deep.jpg",
           cta: "Request Quote",
+          price: 10,
         },
         {
           id: 4,
@@ -50,6 +56,7 @@ export const SERVICE_DATA: ServiceAll = {
             "We remove debris and dust after any construction or renovation project.",
           image: "/images/cleaning-post-construction.jpg",
           cta: "Request Quote",
+          price: 10,
         },
       ],
     },
@@ -71,6 +78,7 @@ export const SERVICE_DATA: ServiceAll = {
             "Efficient identification and repair of pipe and faucet leaks.",
           image: "/images/plumbing-leaks.jpg",
           cta: "Request Service",
+          price: 10,
         },
         {
           id: 2,
@@ -79,6 +87,7 @@ export const SERVICE_DATA: ServiceAll = {
             "Professional installation of pipe systems for new builds or renovations.",
           image: "/images/plumbing-pipes.jpg",
           cta: "Request Service",
+          price: 10,
         },
         {
           id: 3,
@@ -87,6 +96,7 @@ export const SERVICE_DATA: ServiceAll = {
             "Fast and effective service to unclog drains and pipes.",
           image: "/images/plumbing-drainage.jpg",
           cta: "Request Service",
+          price: 10,
         },
       ],
     },
@@ -108,6 +118,7 @@ export const SERVICE_DATA: ServiceAll = {
             "Development of single-family and multi-family homes tailored to your preferences.",
           image: "/images/construction-residential.jpg",
           cta: "Start Project",
+          price: 10,
         },
         {
           id: 2,
@@ -116,6 +127,7 @@ export const SERVICE_DATA: ServiceAll = {
             "Development of functional and aesthetic commercial spaces for your business.",
           image: "/images/construction-commercial.jpg",
           cta: "Start Project",
+          price: 10,
         },
         {
           id: 3,
@@ -124,6 +136,7 @@ export const SERVICE_DATA: ServiceAll = {
             "We transform and expand your existing spaces, giving them new life.",
           image: "/images/construction-remodel.jpg",
           cta: "Start Project",
+          price: 10,
         },
       ],
     },

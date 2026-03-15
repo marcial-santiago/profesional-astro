@@ -1,14 +1,13 @@
 import type { APIRoute } from "astro";
 import { prisma } from "../../../lib/prisma";
+import { requireAdminAuth } from "../../../middleware/auth.middleware";
+import { errorResponse, internalErrorResponse, successResponse } from "../../../utils/response.utils";
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ cookies }) => {
-  if (cookies.get("admin_session")?.value !== "ok") {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-    });
-  }
+  const authError = await requireAdminAuth(cookies);
+  if (authError) return authError;
 
   try {
     const availability = await prisma.availability.findMany({
@@ -16,45 +15,42 @@ export const GET: APIRoute = async ({ cookies }) => {
     });
     const workTypes = await prisma.workType.findMany();
 
-    return new Response(JSON.stringify({ availability, workTypes }), {
-      status: 200,
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: "Failed to fetch settings" }), {
-      status: 500,
-    });
+    return successResponse({ availability, workTypes });
+  } catch {
+    return internalErrorResponse("Failed to fetch settings");
   }
 };
 
 export const POST: APIRoute = async ({ request, cookies }) => {
-  if (cookies.get("admin_session")?.value !== "ok") {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-    });
-  }
+  const authError = await requireAdminAuth(cookies);
+  if (authError) return authError;
 
   try {
-    const body = await request.json();
+    const body = await request.json().catch(() => null);
+    if (!body) return errorResponse("Invalid JSON body", 400);
+
     const { type, data } = body;
 
     if (type === "availability") {
-      // Simple bulk update: delete and recreate for this implementation
+      if (!Array.isArray(data)) return errorResponse("data must be an array", 400);
       await prisma.availability.deleteMany({});
       await prisma.availability.createMany({ data });
     } else if (type === "workType") {
+      if (!data || typeof data !== "object") return errorResponse("Invalid data", 400);
+      const id = parseInt(data.id);
+      if (isNaN(id) || id <= 0) return errorResponse("Invalid work type ID", 400);
       await prisma.workType.upsert({
-        where: { id: data.id || -1 },
-        update: data,
-        create: data,
+        where: { id },
+        update: { name: data.name, duration: data.duration, price: data.price },
+        create: { name: data.name, duration: data.duration, price: data.price ?? 10 },
       });
+    } else {
+      return errorResponse("Invalid type", 400);
     }
 
-    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    return successResponse({ ok: true });
   } catch (error) {
     console.error("Error updating settings:", error);
-    return new Response(
-      JSON.stringify({ error: "Failed to update settings" }),
-      { status: 500 },
-    );
+    return internalErrorResponse("Failed to update settings");
   }
 };

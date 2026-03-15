@@ -12,7 +12,7 @@ import { ERROR_MESSAGES } from "../../../constants";
 export const prerender = false;
 
 export const GET: APIRoute = async ({ cookies }) => {
-  const authError = requireAdminAuth(cookies);
+  const authError = await requireAdminAuth(cookies);
   if (authError) return authError;
 
   try {
@@ -26,7 +26,7 @@ export const GET: APIRoute = async ({ cookies }) => {
 };
 
 export const PATCH: APIRoute = async ({ request, cookies }) => {
-  const authError = requireAdminAuth(cookies);
+  const authError = await requireAdminAuth(cookies);
   if (authError) return authError;
 
   try {

@@ -40,16 +40,33 @@ export const VisitService = {
     // This ensures that the check and insert happen atomically
     try {
       const visit = await prisma.$transaction(async (tx: any) => {
-        // Check if slot is available within the transaction
-        const existingVisit = await tx.visit.findFirst({
+        // Check for overlapping visits — not just exact datetime match.
+        // A new visit overlaps if: existing.start < new.end AND existing.end > new.start
+        const newEnd = new Date(visitDate.getTime() + workType.duration * 60_000);
+
+        const overlapping = await tx.visit.findFirst({
           where: {
-            date: visitDate,
             status: { not: VISIT_STATUS.CANCELLED },
+            AND: [
+              { date: { lt: newEnd } },
+              {
+                date: {
+                  gte: new Date(visitDate.getTime() - workType.duration * 60_000),
+                },
+              },
+            ],
           },
+          include: { workType: { select: { duration: true } } },
         });
 
-        if (existingVisit) {
-          throw new Error(ERROR_MESSAGES.SLOT_TAKEN);
+        // Re-check in application layer with actual durations
+        if (overlapping) {
+          const existingEnd = new Date(
+            overlapping.date.getTime() + overlapping.workType.duration * 60_000,
+          );
+          if (overlapping.date < newEnd && existingEnd > visitDate) {
+            throw new Error(ERROR_MESSAGES.SLOT_TAKEN);
+          }
         }
 
         // Create the visit

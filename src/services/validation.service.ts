@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { VALIDATION_RULES, ERROR_MESSAGES } from "../constants";
+import { VALIDATION_RULES, ERROR_MESSAGES, APP_TIMEZONE } from "../constants";
 
 // Reusable validation schemas
 export const schemas = {
@@ -68,46 +68,24 @@ export const updateVisitStatusSchema = z.object({
 // Custom validation functions
 export const ValidationService = {
   /**
-   * Validates a phone number
-   */
-  validatePhone(phone: string): boolean {
-    const cleaned = phone.replace(/[\s\-\(\)]/g, "");
-    return /^[\+]?[\d]{8,15}$/.test(cleaned);
-  },
-
-  /**
-   * Validates a name (letters and spaces only)
-   */
-  validateName(name: string): boolean {
-    return (
-      name.trim().length >= VALIDATION_RULES.NAME_MIN_LENGTH &&
-      /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(name)
-    );
-  },
-
-  /**
-   * Validates if a date is not in the past
-   */
-  isDateInFuture(dateStr: string): boolean {
-    const date = new Date(dateStr);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return date >= today;
-  },
-
-  /**
-   * Validates if a datetime is not in the past
+   * Validates if a datetime is not in the past.
+   * Interprets the date/time in APP_TIMEZONE to avoid UTC offset issues.
    */
   isDateTimeInFuture(dateStr: string, timeStr: string): boolean {
-    const datetime = new Date(`${dateStr}T${timeStr}:00`);
+    // Build an ISO string with the timezone offset resolved via Intl
+    const datetime = new Date(
+      new Date(`${dateStr}T${timeStr}:00`).toLocaleString("en-US", { timeZone: APP_TIMEZONE }),
+    );
     return datetime > new Date();
   },
 
   /**
-   * Combines date and time strings into a Date object
+   * Combines date and time strings into a Date object in APP_TIMEZONE.
    */
   combineDateAndTime(dateStr: string, timeStr: string): Date {
-    return new Date(`${dateStr}T${timeStr}:00`);
+    return new Date(
+      new Date(`${dateStr}T${timeStr}:00`).toLocaleString("en-US", { timeZone: APP_TIMEZONE }),
+    );
   },
 };
 

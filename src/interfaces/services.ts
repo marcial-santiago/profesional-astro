@@ -13,6 +13,7 @@ export type ServiceAll = {
       description: string;
       image: string;
       cta: string;
+      price: number; // USD
     }[];
   }[];
 };
