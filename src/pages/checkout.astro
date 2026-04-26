@@ -9,38 +9,38 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
 
       <!-- Back -->
       <a href="/#agenda" class="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition mb-8">
-        ← Volver al agendador
+        ← Back to scheduler
       </a>
 
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-slate-900">Confirmá tu turno</h1>
-        <p class="text-slate-500 mt-1">Revisá los detalles y completá tus datos para finalizar.</p>
+        <h1 class="text-3xl font-bold text-slate-900">Confirm Your Appointment</h1>
+        <p class="text-slate-500 mt-1">Review the details and complete your information to finish.</p>
       </div>
 
       <!-- Summary card -->
       <div id="summary-card" class="bg-white border border-slate-200 rounded-2xl p-6 mb-6 shadow-sm">
-        <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Resumen de tu visita</h2>
+        <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Visit Summary</h2>
 
         <div class="space-y-3">
           <div class="flex items-center justify-between">
-            <span class="text-sm text-slate-600">Servicio</span>
+            <span class="text-sm text-slate-600">Service</span>
             <span id="summary-service" class="text-sm font-semibold text-slate-900">—</span>
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-sm text-slate-600">Fecha</span>
+            <span class="text-sm text-slate-600">Date</span>
             <span id="summary-date" class="text-sm font-semibold text-slate-900">—</span>
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-sm text-slate-600">Hora</span>
+            <span class="text-sm text-slate-600">Time</span>
             <span id="summary-time" class="text-sm font-semibold text-slate-900">—</span>
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-sm text-slate-600">Duración estimada</span>
+            <span class="text-sm text-slate-600">Estimated Duration</span>
             <span id="summary-duration" class="text-sm font-semibold text-slate-900">—</span>
           </div>
           <div class="border-t border-slate-100 pt-3 flex items-center justify-between">
-            <span class="text-sm font-semibold text-slate-800">Total a pagar</span>
+            <span class="text-sm font-semibold text-slate-800">Total to Pay</span>
             <span id="summary-price" class="text-lg font-bold text-green-700">—</span>
           </div>
         </div>
@@ -49,21 +49,32 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
       <!-- Empty state (shown if no sessionStorage data) -->
       <div id="empty-state" class="hidden text-center py-20 bg-white border border-slate-200 rounded-2xl mb-6">
         <p class="text-4xl mb-4">📅</p>
-        <p class="text-slate-600 font-medium">No hay ningún turno seleccionado.</p>
+        <p class="text-slate-600 font-medium">No appointment selected.</p>
         <a href="/#agenda" class="mt-4 inline-block text-blue-600 text-sm font-medium hover:underline">
-          Ir al agendador
+          Go to scheduler
         </a>
       </div>
 
       <!-- Contact form -->
       <div id="form-section" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Tus datos</h2>
+        <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Your Details</h2>
 
         <form id="checkout-form" class="space-y-4" novalidate>
+          <!-- Honeypot — hidden field to catch bots -->
+          <input
+            type="text"
+            name="company"
+            tabindex="-1"
+            autocomplete="off"
+            class="hidden"
+            style="position:absolute;left:-9999px;opacity:0;height:0;width:0;overflow:hidden;"
+            aria-hidden="true"
+          />
+
           <div class="grid sm:grid-cols-2 gap-4">
             <div>
               <label for="nombre" class="block text-sm font-medium text-slate-700 mb-1">
-                Nombre completo <span class="text-red-500">*</span>
+                Full Name <span class="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -72,7 +83,7 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
                 required
                 minlength="3"
                 maxlength="100"
-                placeholder="Juan García"
+                placeholder="John Smith"
                 class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
               />
               <p class="error-msg hidden text-xs text-red-500 mt-1"></p>
@@ -80,14 +91,16 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
 
             <div>
               <label for="telefono" class="block text-sm font-medium text-slate-700 mb-1">
-                Teléfono <span class="text-red-500">*</span>
+                Phone <span class="text-red-500">*</span>
               </label>
               <input
                 type="tel"
                 id="telefono"
                 name="telefono"
                 required
-                placeholder="+54 9 351 123 4567"
+                pattern="[\d\s\+\-\(\)]{8,20}"
+                placeholder="+61 400 000 000"
+                title="Only numbers, spaces, +, -, and ()"
                 class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
               />
               <p class="error-msg hidden text-xs text-red-500 mt-1"></p>
@@ -96,27 +109,27 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
 
           <div>
             <label for="email" class="block text-sm font-medium text-slate-700 mb-1">
-              Email <span class="text-slate-400">(opcional)</span>
+              Email <span class="text-slate-400">(optional)</span>
             </label>
             <input
               type="email"
               id="email"
               name="email"
-              placeholder="tu@email.com"
+              placeholder="your@email.com"
               class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
             />
           </div>
 
           <div>
             <label for="mensaje" class="block text-sm font-medium text-slate-700 mb-1">
-              Nota adicional <span class="text-slate-400">(opcional)</span>
+              Additional Note <span class="text-slate-400">(optional)</span>
             </label>
             <textarea
               id="mensaje"
               name="mensaje"
               rows="3"
               maxlength="500"
-              placeholder="Contanos brevemente qué necesitás..."
+              placeholder="Briefly describe what you need..."
               class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition resize-none"
             ></textarea>
           </div>
@@ -134,7 +147,7 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/>
               </svg>
-              Pagar con Stripe · <span id="stripe-price-label">USD 10.00</span>
+              Pay with Stripe · <span id="stripe-price-label">USD 10.00</span>
             </button>
 
             <!-- Confirm without payment -->
@@ -143,7 +156,7 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
               id="submit-btn"
               class="w-full border border-slate-200 text-slate-700 py-3 rounded-xl font-medium text-sm hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Solo confirmar turno (sin pago)
+              Confirm Appointment Only (no payment)
             </button>
           </div>
         </form>
@@ -159,12 +172,12 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
         </svg>
       </div>
-      <h2 class="text-2xl font-bold text-slate-900 mb-2">¡Turno Agendado!</h2>
+      <h2 class="text-2xl font-bold text-slate-900 mb-2">Appointment Booked!</h2>
       <p class="text-slate-500 text-sm mb-8">
-        Recibimos tu solicitud. Te contactamos en menos de 24 horas para confirmarlo.
+        We received your request. We'll contact you within 24 hours to confirm.
       </p>
       <a href="/" class="inline-block bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition">
-        Volver al inicio
+        Back to Home
       </a>
     </div>
   </div>
@@ -183,7 +196,7 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
   function formatDate(dateStr: string): string {
     const [year, month, day] = dateStr.split("-").map(Number);
     const date = new Date(year, month - 1, day);
-    return date.toLocaleDateString("es-AR", {
+    return date.toLocaleDateString("en-AU", {
       weekday: "long",
       day: "numeric",
       month: "long",
@@ -195,7 +208,12 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
     if (minutes < 60) return `${minutes} min`;
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
-    return m === 0 ? `${h} hora${h > 1 ? "s" : ""}` : `${h}h ${m}min`;
+    return m === 0 ? `${h} hour${h > 1 ? "s" : ""}` : `${h}h ${m}min`;
+  }
+
+  function getCsrfToken(): string | null {
+    const match = document.cookie.match(/csrf_token=([^;]+)/);
+    return match ? match[1] : null;
   }
 
   // Load checkout data from sessionStorage
@@ -214,7 +232,11 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
     const price = data.price ?? 10;
     const priceLabel = `USD ${price.toFixed(2)}`;
 
-    const el = (id: string) => document.getElementById(id);
+    const el = (id: string) => {
+      const element = document.getElementById(id);
+      if (!element) console.warn(`Element #${id} not found`);
+      return element;
+    };
     el("summary-service")!.textContent = data.workTypeName;
     el("summary-date")!.textContent = formatDate(data.date);
     el("summary-time")!.textContent = data.time;
@@ -225,30 +247,52 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
     // Stripe button
     const stripeBtn = document.getElementById("stripe-btn") as HTMLButtonElement;
     stripeBtn.addEventListener("click", async () => {
+      const form = document.getElementById("checkout-form") as HTMLFormElement;
+      const formError = document.getElementById("form-error")!;
+      formError.classList.add("hidden");
+
+      // Validate form before creating session
+      const validation = validateAndGetFormData(form);
+
+      if (!validation.valid) {
+        return;
+      }
+
       stripeBtn.disabled = true;
-      stripeBtn.textContent = "Redirigiendo...";
+      stripeBtn.textContent = "Redirecting...";
 
       try {
+        const csrfToken = getCsrfToken();
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (csrfToken) headers["x-csrf-token"] = csrfToken;
+
         const res = await fetch("/api/stripe/create-checkout-session", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ workTypeName: data.workTypeName, price }),
+          headers,
+          body: JSON.stringify({
+            workTypeName: data.workTypeName,
+            price,
+            ...validation.data,
+            date: data.date,
+            time: data.time,
+            workTypeId: data.workTypeId,
+            company: "",
+          }),
         });
 
         const result = await res.json();
 
         if (!res.ok || !result.url) {
-          throw new Error(result.error || "Error al crear sesión de pago");
+          throw new Error(result.error || "Error creating payment session");
         }
 
         // Redirect to Stripe hosted checkout
         window.location.href = result.url;
-      } catch (err: any) {
-        const formError = document.getElementById("form-error")!;
-        formError.textContent = err.message || "No se pudo iniciar el pago. Intentá de nuevo.";
+      } catch (err: unknown) {
+        formError.textContent = err instanceof Error ? err.message : "Could not start payment. Please try again.";
         formError.classList.remove("hidden");
         stripeBtn.disabled = false;
-        stripeBtn.innerHTML = `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg> Pagar con Stripe · ${priceLabel}`;
+        stripeBtn.innerHTML = `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg> Pay with Stripe · ${priceLabel}`;
       }
     });
 
@@ -260,46 +304,30 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const nombre = (form.elements.namedItem("nombre") as HTMLInputElement).value.trim();
-      const telefono = (form.elements.namedItem("telefono") as HTMLInputElement).value.trim();
-      const email = (form.elements.namedItem("email") as HTMLInputElement).value.trim();
-      const mensaje = (form.elements.namedItem("mensaje") as HTMLTextAreaElement).value.trim();
-
-      // Inline validation
-      let valid = true;
-
-      if (nombre.length < 3) {
-        showFieldError("nombre", "Ingresá tu nombre completo (mínimo 3 letras)");
-        valid = false;
-      } else {
-        clearFieldError("nombre");
+      // Validate form
+      const validation = validateAndGetFormData(form);
+      if (!validation.valid) {
+        return;
       }
-
-      if (!telefono) {
-        showFieldError("telefono", "El teléfono es requerido");
-        valid = false;
-      } else {
-        clearFieldError("telefono");
-      }
-
-      if (!valid) return;
 
       submitBtn.disabled = true;
-      submitBtn.textContent = "Enviando...";
+      submitBtn.textContent = "Submitting...";
       formError.classList.add("hidden");
 
       try {
+        const csrfToken = getCsrfToken();
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (csrfToken) headers["x-csrf-token"] = csrfToken;
+
         const res = await fetch("/api/visits", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({
-            nombre,
-            telefono,
-            email: email || undefined,
-            mensaje: mensaje || undefined,
+            ...validation.data,
             date: data.date,
             time: data.time,
             workTypeId: data.workTypeId,
+            company: "",
           }),
         });
 
@@ -309,11 +337,11 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
           const msg =
             result.message ||
             result.error ||
-            "No se pudo confirmar el turno. Intentá de nuevo.";
+            "Could not confirm appointment. Please try again.";
           formError.textContent = msg;
           formError.classList.remove("hidden");
           submitBtn.disabled = false;
-          submitBtn.textContent = "Confirmar Turno";
+          submitBtn.textContent = "Confirm Appointment";
           return;
         }
 
@@ -321,16 +349,17 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
         sessionStorage.removeItem("checkout");
         document.getElementById("success-overlay")?.classList.remove("hidden");
       } catch {
-        formError.textContent = "Error de conexión. Verificá tu internet e intentá de nuevo.";
+        formError.textContent = "Connection error. Check your internet and try again.";
         formError.classList.remove("hidden");
         submitBtn.disabled = false;
-        submitBtn.textContent = "Confirmar Turno";
+        submitBtn.textContent = "Confirm Appointment";
       }
     });
   }
 
   function showFieldError(fieldId: string, message: string): void {
-    const input = document.getElementById(fieldId)!;
+    const input = document.getElementById(fieldId);
+    if (!input) return;
     const errorEl = input.parentElement?.querySelector(".error-msg");
     input.classList.add("border-red-300");
     input.classList.remove("border-slate-200");
@@ -341,12 +370,59 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
   }
 
   function clearFieldError(fieldId: string): void {
-    const input = document.getElementById(fieldId)!;
+    const input = document.getElementById(fieldId);
+    if (!input) return;
     const errorEl = input.parentElement?.querySelector(".error-msg");
     input.classList.remove("border-red-300");
     input.classList.add("border-slate-200");
     if (errorEl) {
       errorEl.classList.add("hidden");
     }
+  }
+
+  // Helper function to validate form and get data
+  function validateAndGetFormData(form: HTMLFormElement) {
+    const honeypot = (form.elements.namedItem("company") as HTMLInputElement)?.value;
+    if (honeypot) {
+      console.warn("Bot detected — honeypot field filled");
+      return { valid: false };
+    }
+
+    const nombre = (form.elements.namedItem("nombre") as HTMLInputElement).value.trim();
+    const telefono = (form.elements.namedItem("telefono") as HTMLInputElement).value.trim();
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value.trim();
+    const mensaje = (form.elements.namedItem("mensaje") as HTMLTextAreaElement).value.trim();
+
+    let valid = true;
+
+    if (nombre.length < 3) {
+      showFieldError("nombre", "Enter your full name (minimum 3 letters)");
+      valid = false;
+    } else {
+      clearFieldError("nombre");
+    }
+
+    const phoneRegex = /^[\d\s\+\-\(\)]{8,20}$/;
+    if (!telefono) {
+      showFieldError("telefono", "Phone number is required");
+      valid = false;
+    } else if (!phoneRegex.test(telefono)) {
+      showFieldError("telefono", "Invalid phone number format");
+      valid = false;
+    } else {
+      clearFieldError("telefono");
+    }
+
+    if (!valid) return { valid: false };
+
+    return {
+      valid: true,
+      data: {
+        nombre,
+        telefono,
+        email: email || undefined,
+        mensaje: mensaje || undefined,
+      },
+    };
   }
 </script>

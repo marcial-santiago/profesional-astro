@@ -1,23 +1,12 @@
-interface RateEntry {
-  count: number;
-  resetAt: number;
-}
+// Rate limiter backed by PostgreSQL — works across serverless instances.
+// Uses a fixed-window counter stored in the rate_limits table.
 
-// In-memory store — works for single-server / dev.
-// For multi-instance production (Vercel Edge), swap for Redis/Upstash.
-const store = new Map<string, RateEntry>();
-
-// Prune expired entries every minute to avoid memory leak
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of store) {
-    if (entry.resetAt < now) store.delete(key);
-  }
-}, 60_000);
+import { prisma } from "./prisma";
+import type { PrismaClient } from "../../prisma/client";
 
 export interface RateLimitConfig {
   limit: number;    // max requests allowed
-  windowMs: number; // sliding window in milliseconds
+  windowMs: number; // window duration in milliseconds
 }
 
 export interface RateLimitResult {
@@ -26,29 +15,68 @@ export interface RateLimitResult {
   resetAt: number; // unix ms
 }
 
-export function checkRateLimit(
+/**
+ * Check rate limit using Prisma/PostgreSQL.
+ * Uses Prisma upsert for atomic increment — safe for concurrent requests.
+ */
+export async function checkRateLimit(
   ip: string,
   endpoint: string,
   config: RateLimitConfig,
-): RateLimitResult {
+): Promise<RateLimitResult> {
   const key = `${endpoint}:${ip}`;
   const now = Date.now();
-  const entry = store.get(key);
+  const resetAt = now + config.windowMs;
 
-  // First request or window expired — reset
-  if (!entry || entry.resetAt < now) {
-    store.set(key, { count: 1, resetAt: now + config.windowMs });
-    return { allowed: true, remaining: config.limit - 1, resetAt: now + config.windowMs };
+  try {
+    // Use a transaction to ensure atomicity
+    const entry = await prisma.$transaction(async (tx: PrismaClient) => {
+      const existing = await tx.rateLimit.findUnique({ where: { key } });
+
+      // No entry or window expired — create/reset
+      if (!existing || existing.resetAt.getTime() < now) {
+        return tx.rateLimit.upsert({
+          where: { key },
+          create: { key, count: 1, resetAt: new Date(resetAt) },
+          update: { count: 1, resetAt: new Date(resetAt) },
+        });
+      }
+
+      // Window still active — increment
+      return tx.rateLimit.update({
+        where: { key },
+        data: { count: { increment: 1 } },
+      });
+    });
+
+    const resetAtMs = entry.resetAt.getTime();
+    const count = entry.count;
+
+    if (count > config.limit) {
+      return { allowed: false, remaining: 0, resetAt: resetAtMs };
+    }
+
+    return {
+      allowed: true,
+      remaining: config.limit - count,
+      resetAt: resetAtMs,
+    };
+  } catch (error) {
+    // On DB failure, fail open — don't block legitimate users
+    console.error("Rate limiter DB error:", error);
+    return { allowed: true, remaining: config.limit, resetAt: resetAt };
   }
+}
 
-  if (entry.count >= config.limit) {
-    return { allowed: false, remaining: 0, resetAt: entry.resetAt };
+/**
+ * Cleanup expired entries — run periodically or from a cron job.
+ */
+export async function cleanupExpiredRateLimits(): Promise<void> {
+  try {
+    await prisma.rateLimit.deleteMany({
+      where: { resetAt: { lt: new Date() } },
+    });
+  } catch (error) {
+    console.error("Rate limit cleanup error:", error);
   }
-
-  entry.count++;
-  return {
-    allowed: true,
-    remaining: config.limit - entry.count,
-    resetAt: entry.resetAt,
-  };
 }

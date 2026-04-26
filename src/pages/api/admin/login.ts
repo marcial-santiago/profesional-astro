@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { timingSafeEqual } from "node:crypto";
 import { createSessionToken } from "../../../lib/session";
+import { generateCsrfToken, CSRF_COOKIE_NAME } from "../../../lib/csrf";
 
 function safeCompare(a: string, b: string): boolean {
   const enc = new TextEncoder();
@@ -44,16 +45,26 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   }
 
   const token = await createSessionToken(secret);
+  const csrfToken = generateCsrfToken();
 
   cookies.set("admin_session", token, {
     httpOnly: true,
     sameSite: "strict",
-    secure: true, // always — even in dev, avoids http interception
+    secure: import.meta.env.PROD, // only require HTTPS in production
     path: "/",
     maxAge: 60 * 60 * 8, // 8 hours
   });
 
-  return new Response(JSON.stringify({ ok: true }), {
+  // CSRF token cookie — NOT httpOnly so client JS can read it for header
+  cookies.set(CSRF_COOKIE_NAME, csrfToken, {
+    httpOnly: false,
+    sameSite: "strict",
+    secure: import.meta.env.PROD,
+    path: "/",
+    maxAge: 60 * 60 * 8, // 8 hours (same as session)
+  });
+
+  return new Response(JSON.stringify({ ok: true, csrfToken }), {
     status: 200,
     headers: { "Content-Type": "application/json" },
   });

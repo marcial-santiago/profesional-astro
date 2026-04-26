@@ -10,6 +10,8 @@ export interface CreateVisitData {
   time: string;
   workTypeId: number;
   mensaje?: string;
+  stripeSessionId?: string;
+  stripeEventId?: string;
 }
 
 export const VisitService = {
@@ -17,7 +19,7 @@ export const VisitService = {
    * Create a new visit with atomic transaction to prevent race conditions
    */
   async createVisit(data: CreateVisitData) {
-    const { nombre, telefono, email, date, time, workTypeId, mensaje } = data;
+    const { nombre, telefono, email, date, time, workTypeId, mensaje, stripeSessionId, stripeEventId } = data;
 
     // Validate that the datetime is in the future
     if (!ValidationService.isDateTimeInFuture(date, time)) {
@@ -79,6 +81,8 @@ export const VisitService = {
             workTypeId,
             mensaje,
             status: VISIT_STATUS.PENDING,
+            stripeSessionId,
+            stripeEventId,
           },
           include: {
             workType: true,
@@ -193,6 +197,41 @@ export const VisitService = {
       },
       include: { workType: true },
       orderBy: { date: "asc" },
+    });
+  },
+
+  /**
+   * Find a visit by Stripe Session ID for idempotency
+   */
+  async findVisitByStripeSessionId(sessionId: string) {
+    return await prisma.visit.findFirst({
+      where: { stripeSessionId: sessionId },
+      include: { workType: true },
+    });
+  },
+
+  /**
+   * Find a visit by date, time, and workTypeId
+   * Used to check if a visit was already created (duplicate prevention)
+   */
+  async findVisitBySlot(date: string, time: string, workTypeId: number) {
+    const visitDate = ValidationService.combineDateAndTime(date, time);
+
+    // Find visits within a small window around the target time
+    // This handles any slight time variations
+    const windowBefore = new Date(visitDate.getTime() - 5 * 60_000); // 5 minutes before
+    const windowAfter = new Date(visitDate.getTime() + 5 * 60_000); // 5 minutes after
+
+    return await prisma.visit.findFirst({
+      where: {
+        date: {
+          gte: windowBefore,
+          lte: windowAfter,
+        },
+        workTypeId,
+        status: { not: VISIT_STATUS.CANCELLED },
+      },
+      include: { workType: true },
     });
   },
 };

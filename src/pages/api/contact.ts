@@ -34,7 +34,9 @@ export const POST: APIRoute = async ({ request }) => {
   const parsed = contactSchema.safeParse(rawData);
 
   if (!parsed.success) {
-    console.log("Validation errors:", parsed.error.format());
+    // Log only field names that failed, NOT user data values
+    const failedFields = Object.keys(parsed.error.format());
+    console.log("Contact validation failed for fields:", failedFields);
     return errorResponse(ERROR_MESSAGES.INVALID_DATA, 400);
   }
 

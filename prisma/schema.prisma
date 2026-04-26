@@ -39,17 +39,19 @@ enum VisitStatus {
 }
 
 model Visit {
-  id         Int         @id @default(autoincrement())
-  nombre     String
-  telefono   String
-  email      String?
-  date       DateTime    // The date and time of the visit
-  workTypeId Int
-  workType   WorkType    @relation(fields: [workTypeId], references: [id])
-  mensaje    String?
-  status     VisitStatus @default(PENDING)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id              Int         @id @default(autoincrement())
+  nombre          String
+  telefono        String
+  email           String?
+  date            DateTime    // The date and time of the visit
+  workTypeId      Int
+  workType        WorkType    @relation(fields: [workTypeId], references: [id])
+  mensaje         String?
+  status          VisitStatus @default(PENDING)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  stripeSessionId String?     @unique // Stripe Checkout Session ID for idempotency
+  stripeEventId   String?     // Stripe Event ID for audit trail
 
   @@index([date, status])
 }
@@ -65,4 +67,36 @@ model BlockedDate {
   id     Int      @id @default(autoincrement())
   date   DateTime @unique
   reason String?
+}
+
+model RateLimit {
+  id        Int      @id @default(autoincrement())
+  key       String   // "endpoint:ip"
+  count     Int      @default(1)
+  resetAt   DateTime // When the window expires
+
+  @@unique([key])
+  @@index([resetAt])
+}
+
+model RevokedToken {
+  id        Int      @id @default(autoincrement())
+  jti       String   @unique // JWT ID from session token
+  revokedAt DateTime @default(now())
+
+  @@index([revokedAt])
+}
+
+model StripeEventLog {
+  id          Int      @id @default(autoincrement())
+  eventId     String   @unique // Stripe event ID (evt_...)
+  eventType   String   // e.g. checkout.session.completed
+  status      String   // processing, completed, failed
+  sessionId   String?  // Associated checkout session ID
+  visitId     Int?     // Associated visit ID (if fulfillment created one)
+  error       String?  // Error message if failed
+  createdAt   DateTime @default(now())
+
+  @@index([status])
+  @@index([sessionId])
 }

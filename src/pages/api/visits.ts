@@ -14,6 +14,15 @@ export const prerender = false;
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
+
+    // Honeypot check — reject if bot filled the hidden field
+    if (body.company && body.company.trim() !== "") {
+      return new Response(JSON.stringify({ error: "Bad request" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     const parsed = visitSchema.safeParse(body);
 
     if (!parsed.success) {
