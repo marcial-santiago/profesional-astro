@@ -1,101 +1,317 @@
-# Guía de instalación y configuración
+# Professional Astro
 
-## 1. Instalar dependencias
+Business website with service booking, Stripe payments, and admin panel. Built with Astro 5, PostgreSQL, and Prisma.
 
-Ejecutar el siguiente comando para instalar los paquetes necesarios:
+**Live demo:** [profesional-astro.vercel.app](https://profesional-astro.vercel.app/)
+
+---
+
+## Features
+
+- **Service showcase** — Dynamic service pages with pricing and descriptions
+- **Visit scheduling** — Book time slots with availability validation and conflict prevention
+- **Stripe payments** — Secure checkout with DB-side price validation (client can't manipulate prices)
+- **Contact form** — Multi-field form with Zod validation and honeypot bot protection
+- **Blog** — MDX-powered content collection with RSS feed and sitemap
+- **Admin panel** — Manage work types, view bookings, update visit status
+- **Security** — CSRF tokens, rate limiting, honeypot fields, security headers (CSP, X-Frame-Options)
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Astro 5 (SSR, server mode) |
+| Styling | Tailwind CSS 4 |
+| Database | PostgreSQL 15 |
+| ORM | Prisma 7 |
+| Validation | Zod 4 |
+| Payments | Stripe Checkout |
+| Testing | Vitest + custom verification scripts |
+| Deployment | Vercel (Node adapter, standalone) |
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- **Node.js >= 18**
+- **pnpm >= 8** — `npm i -g pnpm`
+- **Docker** — for local PostgreSQL (or use Neon/Supabase)
+
+### 1. Install dependencies
 
 ```bash
-pnpm i
+pnpm install
 ```
 
-````
+### 2. Set up environment variables
 
----
+```bash
+cp example.env .env
+```
 
-## 2. Configuración de variables de entorno
+Edit `.env` with your values. The defaults work for local development with Docker.
 
-Copiar el archivo `example.env` y renombrarlo como `.env`.
-Luego, completar los valores requeridos dentro de `.env`.
-
----
-
-## 3. Base de datos con Docker
-
-Levantar el contenedor de la base de datos con:
+### 3. Start the database
 
 ```bash
 docker compose up -d
 ```
 
----
+> **Note:** The database maps to port **5433** on your host (not 5432) to avoid conflicts with other PostgreSQL instances.
 
-## 4. Alternativa de conexión
+Verify it's running:
 
-En lugar de usar Docker, se puede configurar la URI de conexión hacia:
-DATABASE_URL=
+```bash
+docker exec profesional-astro-postgres pg_isready -U postgres
+```
 
-- Una instancia de **Supabase**
-- Una base de datos en **Neon**
-- Una base de datos local ya existente
-
----
-
-## 5. Sincronizar Prisma
-
-Ejecutar el siguiente comando para aplicar el esquema de Prisma en la base de datos:
+### 4. Apply the database schema
 
 ```bash
 pnpm prisma db push
 ```
 
----
+Optional — explore the database visually:
 
-## 6. Configuración de Pagos (Stripe)
-
-### Variables de Entorno Necesarias
-
-Asegúrate de agregar las siguientes variables en tu archivo `.env`:
-
-```env
-# Stripe API Keys
-STRIPE_SECRET_KEY=sk_test_... (tu clave secreta de Stripe)
-STRIPE_WEBHOOK_SECRET=whsec_... (secreto del webhook)
+```bash
+pnpm prisma studio
 ```
 
-### Configuración del Webhook
+### 5. Start the dev server
 
-Para que el sistema de pagos funcione correctamente y cree los registros de visitas automáticamente después de un pago, debes configurar un webhook en tu cuenta de Stripe.
+```bash
+pnpm dev
+```
 
-1.  **Inicia sesión en tu Dashboard de Stripe** y ve a la sección de *Developers > Webhooks*.
-2.  **Crea un nuevo endpoint**:
-    *   **Endpoint URL**: `https://tu-dominio.com/api/stripe/webhook`
-    *   *Nota para desarrollo local:* Usa `stripe listen` para simular webhooks localmente:
-        ```bash
-        stripe listen --forward-to localhost:3000/api/stripe/webhook
-        ```
-3.  **Selecciona los eventos a escuchar**. Debes seleccionar:
-    *   `checkout.session.completed`
-4.  **Copia el "Signing Secret"** que Stripe te proporciona al crear el webhook.
-5.  **Pega el secreto** en la variable de entorno `STRIPE_WEBHOOK_SECRET` en tu archivo `.env`.
-
-### Flujo del Sistema de Pagos
-
-1.  El usuario selecciona un turno en el agendador.
-2.  En la página de checkout, completa sus datos personales (nombre, teléfono, email).
-3.  El usuario elige **"Pagar con Stripe"** o **"Solo confirmar turno"**.
-4.  **Si paga con Stripe**:
-    *   Se crea una sesión de pago con los datos del turno y del usuario guardados en `metadata`.
-    *   El usuario completa el pago en Stripe.
-    *   Stripe envía un evento `checkout.session.completed` a tu webhook (`/api/stripe/webhook`).
-    *   El webhook verifica la firma, extrae los datos de la `metadata` y crea el registro de `Visit` en la base de datos.
-5.  **Si confirma sin pago**:
-    *   Los datos se envían directamente a `/api/visits` y se crea el registro inmediatamente.
+Open [http://localhost:4321](http://localhost:4321).
 
 ---
 
-## ✅ Resultado
+## Environment Variables
 
-Con estos pasos, la aplicación queda conectada a la base de datos y el sistema de pagos configurado para procesar turnos.
+| Variable | Description | Default (dev) |
+|---|---|---|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:prisma@localhost:5433/postgres` |
+| `ADMIN_USER` | Admin panel username | `admin` |
+| `ADMIN_PASSWORD` | Admin panel password | `supersegura123` |
+| `ADMIN_SESSION_SECRET` | Cookie signing secret (min 32 random chars) | `dev-secret-change-in-production` |
+| `STRIPE_SECRET_KEY` | Stripe secret key | `sk_test_...` |
+| `PUBLIC_STRIPE_KEY` | Stripe publishable key | `pk_test_...` |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret | `whsec_...` |
+| `APP_TIMEZONE` | IANA timezone for date validation | `America/Argentina/Buenos_Aires` |
+
+Generate a secure session secret:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+---
+
+## Project Structure
 
 ```
-````
+profesional-astro/
+├── src/
+│   ├── components/           # Reusable Astro components
+│   │   ├── VisitScheduler/   # Booking widget with step-by-step flow
+│   │   ├── PrincipalForm/    # Contact form with validation
+│   │   ├── BannerPrincipal/  # Hero section
+│   │   ├── ServicesCards/    # Service grid
+│   │   └── Map/              # Google Maps integration
+│   │
+│   ├── pages/                # File-based routing
+│   │   ├── index.astro       # Home page
+│   │   ├── about.astro       # About page
+│   │   ├── checkout.astro    # Payment/booking checkout
+│   │   ├── admin.astro       # Admin dashboard (protected)
+│   │   ├── services/
+│   │   │   └── [name].astro  # Dynamic service detail pages
+│   │   ├── blog/
+│   │   │   └── [slug].astro  # Blog posts from MDX
+│   │   └── api/
+│   │       ├── visits.ts         # POST — Create booking
+│   │       ├── contact.ts        # POST — Contact form
+│   │       ├── csrf.ts           # GET — CSRF token
+│   │       ├── verify-payment.ts # POST — Payment verification
+│   │       ├── admin/
+│   │       │   ├── login.ts      # POST — Admin auth
+│   │       │   ├── logout.ts     # POST — Clear session
+│   │       │   ├── visits.ts     # GET/PATCH — Manage bookings
+│   │       │   └── work-types/
+│   │       │       ├── index.ts  # POST — Create work type
+│   │       │       └── [id].ts   # PUT/DELETE — Update/delete
+│   │       └── stripe/
+│   │           ├── create-checkout-session.ts  # POST — Stripe session
+│   │           └── webhook.ts                  # POST — Stripe events
+│   │
+│   ├── content/blog/         # MDX blog posts
+│   ├── lib/                  # Utilities
+│   │   ├── prisma.ts         # PrismaClient singleton
+│   │   ├── csrf.ts           # CSRF token generation/verification
+│   │   ├── rate-limiter.ts   # IP-based rate limiting
+│   │   ├── session.ts        # Session management
+│   │   └── ip-utils.ts       # IP extraction helpers
+│   ├── services/             # Business logic
+│   │   ├── visit.service.ts  # Slot availability, conflict detection
+│   │   └── validation.service.ts  # Zod schemas
+│   ├── middleware.ts         # CSRF, rate limiting, security headers
+│   └── consts.ts             # Global constants (SERVICE_DATA)
+│
+├── prisma/
+│   └── schema.prisma         # Data models (Message, Visit, WorkType, etc.)
+│
+├── scripts/
+│   └── verify-all.mjs        # Automated verification suite (35 tests)
+│
+├── tests/                    # Vitest unit/integration tests
+├── docker-compose.yml        # PostgreSQL 15 container
+└── astro.config.mjs          # Astro config (SSR, Node adapter)
+```
+
+---
+
+## Database Schema
+
+| Model | Purpose |
+|-------|---------|
+| `Message` | Contact form submissions |
+| `WorkType` | Service types with name, price, duration |
+| `Visit` | Booked appointments with status tracking |
+| `Availability` | Weekly working hours (day + time range) |
+| `BlockedDate` | Holidays/unavailable dates |
+| `RateLimit` | IP-based rate limiting storage |
+| `RevokedToken` | Invalidated session tokens |
+| `StripeEventLog` | Webhook event audit trail |
+
+---
+
+## Key Flows
+
+### Booking a Visit
+
+1. User browses services → clicks "Book Now"
+2. VisitScheduler shows available slots (checks `Availability`, `BlockedDate`, existing `Visit` conflicts)
+3. User selects date/time → redirected to `/checkout`
+4. Two options:
+   - **Pay with Stripe** → creates checkout session with DB price → webhook creates `Visit` on payment
+   - **Confirm without payment** → POST to `/api/visits` → creates `Visit` directly
+
+### Security Layers
+
+| Layer | Mechanism |
+|-------|-----------|
+| CSRF | Auto-generated token cookie + `x-csrf-token` header check |
+| Rate limiting | 20 requests/min per IP per endpoint (stored in DB) |
+| Honeypot | Hidden `company` field — bots fill it, server rejects |
+| Validation | Zod schemas on all API endpoints (server-side) |
+| Price integrity | Stripe endpoint fetches price from DB, ignores client input |
+| Headers | CSP, X-Frame-Options: DENY, X-Content-Type-Options: nosniff |
+
+---
+
+## Available Scripts
+
+```bash
+# Development
+pnpm dev              # Start dev server (http://localhost:4321)
+pnpm build            # Production build
+pnpm preview          # Preview production build locally
+
+# Database
+pnpm prisma db push       # Sync schema to database
+pnpm prisma migrate dev   # Create and apply migration
+pnpm prisma studio        # Open Prisma Studio UI
+
+# Testing
+pnpm test             # Run Vitest tests
+pnpm test:watch       # Run Vitest in watch mode
+npx tsx scripts/verify-all.mjs  # Run 35 automated endpoint tests
+```
+
+---
+
+## Testing
+
+### Automated Verification
+
+```bash
+npx tsx scripts/verify-all.mjs
+```
+
+Tests 35 endpoints across 10 categories:
+- Server health, CSRF protection, honeypot, validation, admin auth, Stripe pricing, contact form, security headers, static pages, rate limiting
+
+### Unit Tests
+
+```bash
+pnpm test
+```
+
+Covers: CSRF tokens, rate limiter, IP utils, session management, validation schemas, Stripe webhook.
+
+---
+
+## Deployment
+
+### Vercel (Recommended)
+
+1. Connect your repo to Vercel
+2. Set environment variables in Vercel dashboard
+3. Push to `main` — auto-deploys
+
+**Required env vars for production:**
+- `DATABASE_URL` — Neon/Supabase connection string (add `?sslmode=require`)
+- `ADMIN_PASSWORD` — Strong password
+- `ADMIN_SESSION_SECRET` — 64+ random chars
+- `STRIPE_SECRET_KEY` / `PUBLIC_STRIPE_KEY` — Live Stripe keys
+- `STRIPE_WEBHOOK_SECRET` — From Stripe dashboard
+
+### Stripe Webhook Setup
+
+1. Go to **Stripe Dashboard → Developers → Webhooks**
+2. Add endpoint: `https://your-domain.com/api/stripe/webhook`
+3. Select event: `checkout.session.completed`
+4. Copy the signing secret → set as `STRIPE_WEBHOOK_SECRET`
+
+For local development:
+
+```bash
+stripe listen --forward-to localhost:4321/api/stripe/webhook
+```
+
+---
+
+## Troubleshooting
+
+### "Connection terminated unexpectedly"
+
+Docker isn't ready yet. Wait a few seconds after `docker compose up -d` before running `pnpm dev`.
+
+### Port 5433 already in use
+
+Another process is using the port. Check with:
+
+```bash
+netstat -ano | findstr 5433
+```
+
+Or change the port in `docker-compose.yml` and update `DATABASE_URL` in `.env`.
+
+### Prisma client out of sync
+
+```bash
+pnpm prisma generate
+```
+
+### TypeScript errors
+
+```bash
+npx astro check
+```
+
+Should show 0 errors. If not, run `pnpm install` to ensure all types are present.
