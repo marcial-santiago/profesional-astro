@@ -15,7 +15,7 @@ const workTypes = await prisma.workType.findMany({
 });
 
 type WorkType = typeof workTypes[number];
-const grouped = workTypes.reduce((acc: Record<string, WorkType[]>, wt) => {
+const grouped = workTypes.reduce((acc: Record<string, WorkType[]>, wt: WorkType) => {
   if (!acc[wt.category]) acc[wt.category] = [];
   acc[wt.category].push(wt);
   return acc;
