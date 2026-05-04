@@ -6,6 +6,20 @@ import About from "../components/About/index.astro";
 import PrincipalForm from "../components/PrincipalForm/index.astro";
 import VisitScheduler from "../components/VisitScheduler.astro";
 import Map from "../components/Map/index.astro";
+import { prisma } from "../lib/prisma";
+
+// Fetch active services grouped by category from DB
+const workTypes = await prisma.workType.findMany({
+  where: { isActive: true },
+  orderBy: [{ category: "asc" }, { name: "asc" }],
+});
+
+type WorkType = typeof workTypes[number];
+const grouped = workTypes.reduce((acc: Record<string, WorkType[]>, wt) => {
+  if (!acc[wt.category]) acc[wt.category] = [];
+  acc[wt.category].push(wt);
+  return acc;
+}, {} as Record<string, WorkType[]>);
 ---
 
 <BaseLayaout>
@@ -13,7 +27,7 @@ import Map from "../components/Map/index.astro";
     <BannerPrincipal />
   </section>
   <section id="servicios">
-    <ServicesCards />
+    <ServicesCards grouped={grouped} />
   </section>
   <section id="nosotros">
     <About />
