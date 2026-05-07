@@ -98,7 +98,7 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
                 id="telefono"
                 name="telefono"
                 required
-                pattern="[\d\s\+\-\(\)]{8,20}"
+                pattern="[0-9 +()\-]{8,20}"
                 placeholder="+61 400 000 000"
                 title="Only numbers, spaces, +, -, and ()"
                 class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
@@ -244,7 +244,7 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
     el("summary-price")!.textContent = priceLabel;
     el("stripe-price-label")!.textContent = priceLabel;
 
-    // Stripe button
+    // Stripe button — calls Astro API route which creates Stripe session
     const stripeBtn = document.getElementById("stripe-btn") as HTMLButtonElement;
     stripeBtn.addEventListener("click", async () => {
       const form = document.getElementById("checkout-form") as HTMLFormElement;
@@ -262,28 +262,36 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
       stripeBtn.textContent = "Redirecting...";
 
       try {
-        const csrfToken = getCsrfToken();
-        const headers: Record<string, string> = { "Content-Type": "application/json" };
-        if (csrfToken) headers["x-csrf-token"] = csrfToken;
-
         const res = await fetch("/api/stripe/create-checkout-session", {
           method: "POST",
-          headers,
+          headers: {
+            "Content-Type": "application/json",
+            ...(getCsrfToken() ? { "X-CSRF-Token": getCsrfToken()! } : {}),
+          },
           body: JSON.stringify({
             workTypeName: data.workTypeName,
-            price,
-            ...validation.data,
+            price: data.price,
+            nombre: validation.data!.nombre,
+            telefono: validation.data!.telefono,
+            email: validation.data!.email || "",
+            mensaje: validation.data!.mensaje || "",
             date: data.date,
             time: data.time,
             workTypeId: data.workTypeId,
-            company: "",
           }),
         });
 
         const result = await res.json();
 
-        if (!res.ok || !result.url) {
-          throw new Error(result.error || "Error creating payment session");
+        if (!res.ok) {
+          const msg =
+            result.error ||
+            "Could not start payment. Please try again.";
+          formError.textContent = msg;
+          formError.classList.remove("hidden");
+          stripeBtn.disabled = false;
+          stripeBtn.innerHTML = `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg> Pay with Stripe · ${priceLabel}`;
+          return;
         }
 
         // Redirect to Stripe hosted checkout
@@ -299,7 +307,7 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
     // Handle form submission (confirm without payment)
     const form = document.getElementById("checkout-form") as HTMLFormElement;
     const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
-    const formError = document.getElementById("form-error")!;
+    const formErr = document.getElementById("form-error")!;
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -312,34 +320,38 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
 
       submitBtn.disabled = true;
       submitBtn.textContent = "Submitting...";
-      formError.classList.add("hidden");
+      formErr.classList.add("hidden");
 
       try {
         const csrfToken = getCsrfToken();
-        const headers: Record<string, string> = { "Content-Type": "application/json" };
-        if (csrfToken) headers["x-csrf-token"] = csrfToken;
-
         const res = await fetch("/api/visits", {
           method: "POST",
-          headers,
+          headers: {
+            "Content-Type": "application/json",
+            ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
+          },
           body: JSON.stringify({
-            ...validation.data,
+            nombre: validation.data!.nombre,
+            telefono: validation.data!.telefono,
+            email: validation.data!.email || "",
+            mensaje: validation.data!.mensaje || "",
             date: data.date,
             time: data.time,
             workTypeId: data.workTypeId,
-            company: "",
           }),
         });
 
         const result = await res.json();
+        console.log('[Checkout] Response:', res.status, result);
 
         if (!res.ok) {
           const msg =
+            result.error?.message ||
             result.message ||
             result.error ||
             "Could not confirm appointment. Please try again.";
-          formError.textContent = msg;
-          formError.classList.remove("hidden");
+          formErr.textContent = msg;
+          formErr.classList.remove("hidden");
           submitBtn.disabled = false;
           submitBtn.textContent = "Confirm Appointment";
           return;
@@ -348,9 +360,9 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
         // Success
         sessionStorage.removeItem("checkout");
         document.getElementById("success-overlay")?.classList.remove("hidden");
-      } catch {
-        formError.textContent = "Connection error. Check your internet and try again.";
-        formError.classList.remove("hidden");
+      } catch (err) {
+        formErr.textContent = "Connection error. Check your internet and try again.";
+        formErr.classList.remove("hidden");
         submitBtn.disabled = false;
         submitBtn.textContent = "Confirm Appointment";
       }

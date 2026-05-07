@@ -5,7 +5,7 @@ interface Props {
     name: string;
     slug: string;
     description: string | null;
-    image: string | null;
+    image: { path: string } | null;
     category: string;
     duration: number;
     price: number;
@@ -47,8 +47,8 @@ const categoryLabels: Record<string, string> = {
     <!-- Category cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
       {categories.map(([category, services]) => {
-        const firstWithImage = services.find(s => s.image);
-        const heroImage = firstWithImage?.image || "";
+        const firstWithImage = services.find(s => s.image?.path);
+        const heroImage = firstWithImage?.image?.path || "";
         const icon = categoryIcons[category] || categoryIcons.cleaning;
         const label = categoryLabels[category] || category;
 

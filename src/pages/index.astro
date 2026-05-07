@@ -6,13 +6,41 @@ import About from "../components/About/index.astro";
 import PrincipalForm from "../components/PrincipalForm/index.astro";
 import VisitScheduler from "../components/VisitScheduler.astro";
 import Map from "../components/Map/index.astro";
-import { prisma } from "../lib/prisma";
+import { STRAPI_URL, strapiImage } from "../config";
 
-// Fetch active services grouped by category from DB
-const workTypes = await prisma.workType.findMany({
-  where: { isActive: true },
-  orderBy: [{ category: "asc" }, { name: "asc" }],
-});
+interface WorkTypeImage {
+  url: string;
+}
+
+interface StrapiWorkType {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  category: string;
+  duration: number;
+  price: number;
+  isActive: boolean;
+  image: WorkTypeImage | null;
+}
+
+// Fetch active services grouped by category from Strapi
+const res = await fetch(`${STRAPI_URL}/api/work-types?populate=image&filters[isActive][$eq]=true&sort[0]=category:asc&sort[1]=name:asc`);
+const strapiData = await res.json();
+const strapiWorkTypes: StrapiWorkType[] = strapiData.data || [];
+
+// Transform Strapi response to match existing format
+const workTypes = strapiWorkTypes.map((wt) => ({
+  id: wt.id,
+  name: wt.name,
+  slug: wt.slug,
+  description: wt.description,
+  category: wt.category,
+  duration: wt.duration,
+  price: wt.price,
+  isActive: wt.isActive,
+  image: wt.image ? { path: strapiImage(wt.image.url) } : null,
+}));
 
 type WorkType = typeof workTypes[number];
 const grouped = workTypes.reduce((acc: Record<string, WorkType[]>, wt: WorkType) => {

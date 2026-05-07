@@ -5,10 +5,8 @@ import { getClientIp } from "./lib/ip-utils";
 
 // Per-endpoint rate limit configs
 const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
-  "/api/admin/login": { limit: 5,  windowMs: 15 * 60 * 1000 }, // 5 per 15 min
   "/api/contact":     { limit: 10, windowMs: 60 * 1000 },       // 10 per min
   "/api/visits":      { limit: 20, windowMs: 60 * 1000 },       // 20 per min
-  "/api/slots":       { limit: 30, windowMs: 60 * 1000 },       // 30 per min
 };
 
 const DEFAULT_RATE_LIMIT = { limit: 60, windowMs: 60 * 1000 };
@@ -34,7 +32,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
     if (!result.allowed) {
       const retryAfter = Math.ceil((result.resetAt - Date.now()) / 1000);
-      return new Response(JSON.stringify({ error: "Demasiadas solicitudes. Intentá más tarde." }), {
+      return new Response(JSON.stringify({ error: "Too many requests. Try again later." }), {
         status: 429,
         headers: {
           "Content-Type": "application/json",
@@ -52,8 +50,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (
     pathname.startsWith("/api/") &&
     pathname !== STRIPE_WEBHOOK_PATH &&
-    MUTATING_METHODS.has(method) &&
-    pathname !== "/api/contact" // contact uses multipart/form-data
+    pathname !== "/api/contact" && // contact uses multipart/form-data
+    MUTATING_METHODS.has(method)
   ) {
     const ct = request.headers.get("content-type") ?? "";
     if (!ct.includes("application/json")) {
@@ -64,10 +62,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  // ── 2. CSRF — Token verification on mutating requests ─────────────────────
-  // Admin endpoints + public state-changing endpoints
+  // ── 3. CSRF — Token verification on mutating requests ─────────────────────
   const csrfProtectedPaths = [
-    "/api/admin/",
     "/api/visits",
     "/api/stripe/create-checkout-session",
   ];
@@ -75,7 +71,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     p.endsWith("/") ? pathname.startsWith(p) : pathname === p
   );
 
-  if (isCsrfProtected && MUTATING_METHODS.has(method) && pathname !== "/api/admin/login") {
+  if (isCsrfProtected && MUTATING_METHODS.has(method)) {
     const csrfError = verifyCsrfToken(request);
     if (csrfError) {
       csrfError.headers.set("X-Request-Id", requestId);
@@ -83,10 +79,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  // ── 3. Process request ────────────────────────────────────────────────────
+  // ── 4. Process request ────────────────────────────────────────────────────
   const response = await next();
 
-  // ── 4. Set CSRF cookie if not present (for all visitors) ──────────────────
+  // ── 5. Set CSRF cookie if not present (for all visitors) ──────────────────
   const hasCsrfCookie = (request.headers.get("cookie") ?? "").includes(CSRF_COOKIE_NAME);
   if (!hasCsrfCookie) {
     const newToken = generateCsrfToken();
@@ -95,23 +91,22 @@ export const onRequest = defineMiddleware(async (context, next) => {
     );
   }
 
-  // ── 5. Security headers on every response ─────────────────────────────────
+  // ── 6. Security headers on every response ─────────────────────────────────
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
   response.headers.set("X-Request-Id", requestId);
 
-  // CSP — restrict resource loading to same-origin + trusted CDNs
-  // Allow inline styles needed by Astro/Tailwind, block inline scripts
+  // CSP — restrict resource loading to same-origin + trusted CDNs + Strapi
   response.headers.set(
     "Content-Security-Policy",
     "default-src 'self'; " +
     "script-src 'self' 'unsafe-inline'; " +
     "style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data: blob: https://media.istockphoto.com https://www.jkfm.com.au; " +
+    "img-src 'self' data: blob: http://localhost:1337; " +
     "font-src 'self'; " +
-    "connect-src 'self' https://api.stripe.com; " +
+    "connect-src 'self' https://api.stripe.com http://localhost:1337; " +
     "frame-ancestors 'none'; " +
     "base-uri 'self'; " +
     "form-action 'self';"

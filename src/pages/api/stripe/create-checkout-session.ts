@@ -1,14 +1,16 @@
 import type { APIRoute } from "astro";
-import { stripe } from "../../../lib/stripe";
-import { prisma } from "../../../lib/prisma";
-import { DEFAULT_SERVICE_PRICE } from "../../../consts";
-import { ALLOWED_ORIGINS } from "../../../constants";
+import { stripe } from "../../lib/stripe";
+import { getWorkType } from "../../lib/strapi";
+import { ALLOWED_ORIGINS } from "../../constants";
 import {
   errorResponse,
   internalErrorResponse,
   successResponse,
-} from "../../../utils/response.utils";
+} from "../../utils/response.utils";
 import { z } from "zod";
+
+// Default price in USD for any service not explicitly priced
+const DEFAULT_SERVICE_PRICE = 10;
 
 export const prerender = false;
 
@@ -56,7 +58,7 @@ export const POST: APIRoute = async ({ request }) => {
   } = parsed.data;
 
   // Validate work type exists and get server-side price (prevents price manipulation)
-  const workType = await prisma.workType.findUnique({ where: { id: workTypeId } });
+  const workType = await getWorkType(workTypeId);
   if (!workType || !workType.isActive) {
     return errorResponse("Service not available", 400);
   }
@@ -83,7 +85,7 @@ export const POST: APIRoute = async ({ request }) => {
             unit_amount: amountInCents,
             product_data: {
               name: workTypeName,
-              description: "Visita técnica profesional",
+              description: "Professional technical visit",
             },
           },
         },
@@ -105,6 +107,6 @@ export const POST: APIRoute = async ({ request }) => {
     return successResponse({ url: session.url });
   } catch (error) {
     console.error("Stripe error:", error);
-    return internalErrorResponse("No se pudo crear la sesión de pago");
+    return internalErrorResponse("Could not create payment session");
   }
 };

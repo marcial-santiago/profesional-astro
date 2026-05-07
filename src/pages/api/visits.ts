@@ -1,53 +1,74 @@
 import type { APIRoute } from "astro";
-import { visitSchema } from "../../services/validation.service";
-import { VisitService } from "../../services/visit.service";
+import { createVisit } from "../../lib/strapi";
+import { ALLOWED_ORIGINS } from "../../constants";
 import {
-  validationErrorResponse,
-  createdResponse,
-  conflictResponse,
+  errorResponse,
   internalErrorResponse,
+  successResponse,
 } from "../../utils/response.utils";
-import { ERROR_MESSAGES } from "../../constants";
+import { z } from "zod";
 
 export const prerender = false;
 
+const bodySchema = z.object({
+  nombre: z.string().min(3).max(100),
+  telefono: z.string().min(8).max(20),
+  email: z.string().email().or(z.literal("")).optional(),
+  mensaje: z.string().max(500).optional(),
+  date: z.string(), // ISO datetime: YYYY-MM-DDTHH:mm
+  time: z.string(), // HH:mm
+  workTypeId: z.number().int().positive(), // accepted but not sent to Strapi
+  status: z.enum(["pending", "confirmed", "cancelled"]).optional().default("pending"),
+  // Honeypot
+  company: z.string().optional(),
+});
+
 export const POST: APIRoute = async ({ request }) => {
+  const body = await request.json().catch(() => null);
+
+  if (!body) {
+    return errorResponse("Invalid JSON body", 400);
+  }
+
+  // Honeypot check — reject if bot filled the hidden field
+  if (body.company && body.company.trim() !== "") {
+    return errorResponse("Bad request", 400);
+  }
+
+  const parsed = bodySchema.safeParse(body);
+  if (!parsed.success) {
+    return errorResponse("Invalid request data", 400);
+  }
+
+  const { nombre, telefono, email, mensaje, date, time, workTypeId, status } = parsed.data;
+
+  // Validate origin
+  const requestOrigin = request.headers.get("origin") ?? "";
+  if (!ALLOWED_ORIGINS.includes(requestOrigin)) {
+    return errorResponse("Origin not allowed", 400);
+  }
+
   try {
-    const body = await request.json();
+    // Combine date and time into ISO datetime with timezone
+    const datetime = `${date}T${time}:00`;
 
-    // Honeypot check — reject if bot filled the hidden field
-    if (body.company && body.company.trim() !== "") {
-      return new Response(JSON.stringify({ error: "Bad request" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+    console.log("[visits] Creating visit:", { nombre, telefono, email, date: datetime, workTypeId, status });
 
-    const parsed = visitSchema.safeParse(body);
+    const result = await createVisit({
+      nombre,
+      telefono,
+      email: email || undefined,
+      mensaje: mensaje || undefined,
+      date: datetime,
+      workType: workTypeId,
+      status,
+    });
 
-    if (!parsed.success) {
-      return validationErrorResponse(parsed.error.format());
-    }
-
-    const visit = await VisitService.createVisit(parsed.data);
-
-    return createdResponse(visit);
+    console.log("[visits] Created successfully:", result.data?.id);
+    return successResponse({ id: result.data?.id }, 201);
   } catch (error) {
-    console.error("Error creating visit:", error);
-
-    // Handle known errors
-    if (error instanceof Error) {
-      if (error.message === ERROR_MESSAGES.SLOT_TAKEN) {
-        return conflictResponse(ERROR_MESSAGES.SLOT_TAKEN);
-      }
-      if (error.message === ERROR_MESSAGES.PAST_DATE) {
-        return validationErrorResponse({ date: error.message });
-      }
-      if (error.message === ERROR_MESSAGES.WORK_TYPE_NOT_FOUND) {
-        return validationErrorResponse({ workTypeId: error.message });
-      }
-    }
-
-    return internalErrorResponse(ERROR_MESSAGES.INTERNAL_ERROR);
+    console.error("[visits] Error creating visit:", error);
+    // Don't expose internal details to client
+    return internalErrorResponse("Could not create appointment. Please try again.");
   }
 };

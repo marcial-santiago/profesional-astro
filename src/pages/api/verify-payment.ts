@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { stripe } from "../../lib/stripe";
+import { findVisitsByStripeSession, createVisit } from "../../lib/strapi";
 import { ERROR_MESSAGES } from "../../constants";
-import { VisitService } from "../../services/visit.service";
 import {
   errorResponse,
   successResponse,
@@ -11,16 +11,10 @@ import {
 export const prerender = false;
 
 /**
- * Verify Stripe Session and Create Visit (fallback for webhook).
+ * Verify Stripe Session and Create Visit in Strapi (fallback for webhook).
  *
- * This endpoint is called from the success page to verify that a payment
- * was successful and create the visit record. It's a fallback mechanism
- * in case the webhook is delayed or hasn't fired yet.
- *
- * Security: Only creates visit if Stripe session is paid.
- * Idempotency: Checks for existing visit by stripeSessionId first.
- *
- * Docs: https://docs.stripe.com/checkout/fulfillment#trigger-fulfillment-on-your-landing-page
+ * Called from the success page to verify payment and create the visit.
+ * Idempotency: checks for existing visit by stripeSessionId.
  */
 export const GET: APIRoute = async ({ url }) => {
   const sessionId = url.searchParams.get("session_id");
@@ -32,13 +26,12 @@ export const GET: APIRoute = async ({ url }) => {
 
   try {
     // ── 1. Check if visit already exists for this session (idempotency) ─────
-    const existingVisit =
-      await VisitService.findVisitByStripeSessionId(sessionId);
-    if (existingVisit) {
+    const existingVisits = await findVisitsByStripeSession(sessionId);
+    if (existingVisits.length > 0) {
       return successResponse({
         success: true,
-        visitId: existingVisit.id,
-        status: existingVisit.status,
+        visitId: existingVisits[0].id,
+        status: existingVisits[0].status || "confirmed",
         alreadyExisted: true,
       });
     }
@@ -81,46 +74,45 @@ export const GET: APIRoute = async ({ url }) => {
       return errorResponse("Invalid workTypeId", 400);
     }
 
-    // ── 4. Create visit ────────────────────────────────────────────────────
-    const visit = await VisitService.createVisit({
+    // ── 4. Create visit in Strapi ──────────────────────────────────────────
+    const visitDate = new Date(`${date}T${time}`);
+    const result = await createVisit({
       nombre,
       telefono,
       email: rawEmail || undefined,
       mensaje: rawMensaje || undefined,
-      date,
-      time,
-      workTypeId: parsedWorkTypeId,
+      date: visitDate.toISOString(),
+      workType: parsedWorkTypeId,
+      status: "confirmed",
       stripeSessionId: sessionId,
     });
 
     return successResponse({
       success: true,
-      visitId: visit.id,
-      status: visit.status,
+      visitId: result.data?.id,
+      status: "confirmed",
     });
   } catch (error) {
-    // ── 5. Handle known errors ─────────────────────────────────────────────
     if (error instanceof Error) {
       if (
-        error.message === ERROR_MESSAGES.SLOT_TAKEN ||
-        error.message === ERROR_MESSAGES.PAST_DATE ||
-        error.message === ERROR_MESSAGES.WORK_TYPE_NOT_FOUND
+        error.message.includes("already taken") ||
+        error.message.includes("past date") ||
+        error.message.includes("work type not found")
       ) {
         return errorResponse(error.message, 409);
       }
 
       // Check if visit already exists (race condition with webhook)
       if (
-        error.message.includes("Unique constraint") ||
-        error.message.includes("already exists")
+        error.message.includes("already exists") ||
+        error.message.includes("already been taken")
       ) {
-        const existingVisit =
-          await VisitService.findVisitByStripeSessionId(sessionId);
-        if (existingVisit) {
+        const existingVisits = await findVisitsByStripeSession(sessionId);
+        if (existingVisits.length > 0) {
           return successResponse({
             success: true,
-            visitId: existingVisit.id,
-            status: existingVisit.status,
+            visitId: existingVisits[0].id,
+            status: existingVisits[0].status || "confirmed",
             alreadyExisted: true,
           });
         }

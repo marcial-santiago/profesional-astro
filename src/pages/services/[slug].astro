@@ -2,25 +2,66 @@
 export const prerender = false;
 
 import BaseLayout from "../../layouts/BaseLayaout.astro";
-import { prisma } from "../../lib/prisma";
+import { STRAPI_URL, strapiImage } from "../../config";
 import Button from "../../components/Button/index.astro";
 import PrincipalForm from "../../components/PrincipalForm/index.astro";
 
 const { slug } = Astro.params;
 
-const service = await prisma.workType.findUnique({
-  where: { slug: slug || "", isActive: true },
-});
+interface WorkTypeImage {
+  url: string;
+}
 
-if (!service) {
+interface StrapiWorkType {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  category: string;
+  duration: number;
+  price: number;
+  isActive: boolean;
+  image: WorkTypeImage | null;
+}
+
+// Fetch single service by slug
+const serviceRes = await fetch(`${STRAPI_URL}/api/work-types?filters[slug][$eq]=${slug}&filters[isActive][$eq]=true&populate=image`);
+const serviceData = await serviceRes.json();
+const strapiService: StrapiWorkType | undefined = serviceData.data?.[0];
+
+if (!strapiService) {
   return Astro.redirect("/404");
 }
 
+// Transform to match existing format
+const service = {
+  id: strapiService.id,
+  name: strapiService.name,
+  slug: strapiService.slug,
+  description: strapiService.description,
+  category: strapiService.category,
+  duration: strapiService.duration,
+  price: strapiService.price,
+  isActive: strapiService.isActive,
+  image: strapiService.image ? { path: strapiImage(strapiService.image.url) } : null,
+};
+
 // Get other services for "Other Services" section
-const otherServices = await prisma.workType.findMany({
-  where: { isActive: true, slug: { not: service.slug } },
-  take: 3,
-});
+const otherRes = await fetch(`${STRAPI_URL}/api/work-types?filters[slug][$ne]=${slug}&filters[isActive][$eq]=true&populate=image&pagination[limit]=3`);
+const otherData = await otherRes.json();
+const strapiOthers: StrapiWorkType[] = otherData.data || [];
+
+const otherServices = strapiOthers.map((wt) => ({
+  id: wt.id,
+  name: wt.name,
+  slug: wt.slug,
+  description: wt.description,
+  category: wt.category,
+  duration: wt.duration,
+  price: wt.price,
+  isActive: wt.isActive,
+  image: wt.image ? { path: strapiImage(wt.image.url) } : null,
+}));
 
 type WorkType = typeof otherServices[number];
 ---
@@ -31,9 +72,9 @@ type WorkType = typeof otherServices[number];
   <section class="relative min-h-[70vh] flex items-end overflow-hidden">
     <!-- Background -->
     <div class="absolute inset-0 z-0">
-      {service.image ? (
+      {service.image?.path ? (
         <img
-          src={service.image}
+          src={service.image.path}
           alt={service.name}
           class="w-full h-full object-cover"
         />
@@ -121,8 +162,8 @@ type WorkType = typeof otherServices[number];
               class="group flex items-center gap-5 bg-slate-50 border border-slate-200 rounded-2xl p-5 hover:border-sky-300 hover:bg-sky-50 transition-all duration-200"
             >
               <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-slate-200 flex items-center justify-center">
-                {s.image ? (
-                  <img src={s.image} alt={s.name} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                {s.image?.path ? (
+                  <img src={s.image.path} alt={s.name} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                 ) : (
                   <span class="text-xl text-slate-400">🔧</span>
                 )}

@@ -24,3 +24,14 @@ pnpm-debug.log*
 .idea/
 
 /prisma/client
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/e2e/.auth/
+
+# Test artifacts
+test-e2e-*.jpg
+test-e2e-*.csv
+test-csv-*.jpg

@@ -66,7 +66,6 @@ import Button from "../Button/index.astro";
         <form
           id="contact-form"
           method="POST"
-          action="/api/contact"
           novalidate
           class="flex flex-col gap-5"
         >
@@ -166,13 +165,25 @@ import Button from "../Button/index.astro";
     }
 
     const formData = new FormData(form);
+    const STRAPI_URL = (import.meta as any).env?.STRAPI_URL || 'http://localhost:1337';
 
     try {
       submitBtn.disabled = true;
-      const res = await fetch(form.action, { method: "POST", body: formData });
+      const res = await fetch(`${STRAPI_URL}/api/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          data: {
+            nombre: formData.get("nombre"),
+            telefono: formData.get("telefono"),
+            servicio: formData.get("servicio"),
+            mensaje: formData.get("mensaje"),
+          },
+        }),
+      });
       const result = await res.json();
 
-      if (!res.ok) throw new Error(result.error || "Unexpected error");
+      if (!res.ok) throw new Error(result.error?.message || result.error || "Unexpected error");
 
       showSuccess();
       form.reset();

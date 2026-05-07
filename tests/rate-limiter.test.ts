@@ -1,62 +1,13 @@
-// Tests for rate limiter with mocked Prisma
+// Tests for in-memory rate limiter
 import { describe, it, expect, vi, beforeEach } from "vitest";
-
-// In-memory store shared across mock functions
-const store = new Map<string, { key: string; count: number; resetAt: Date }>();
-
-// Mock prisma before importing rate-limiter
-vi.mock("../src/lib/prisma", () => {
-  const mockTx = {
-    rateLimit: {
-      findUnique: async ({ where }: { where: { key: string } }) => {
-        return store.get(where.key) || null;
-      },
-      upsert: async ({ where, create, update }: { where: { key: string }; create: any; update: any }) => {
-        const existing = store.get(where.key);
-        if (!existing) {
-          store.set(where.key, { ...create });
-          return { ...create };
-        }
-        const updated = { ...existing, ...update };
-        store.set(where.key, updated);
-        return updated;
-      },
-      update: async ({ where, data }: { where: { key: string }; data: any }) => {
-        const existing = store.get(where.key);
-        if (!existing) throw new Error("Not found");
-        let count = existing.count;
-        if (data.count && typeof data.count.increment === "number") {
-          count = existing.count + data.count.increment;
-        } else if (data.count !== undefined) {
-          count = data.count;
-        }
-        const updated = { ...existing, count, ...(data.resetAt && { resetAt: data.resetAt }) };
-        store.set(where.key, updated);
-        return updated;
-      },
-      deleteMany: vi.fn(async () => {}),
-    },
-  };
-
-  const mockPrisma = {
-    rateLimit: mockTx.rateLimit,
-    $transaction: async (fn: (tx: typeof mockTx) => Promise<any>) => {
-      return fn(mockTx);
-    },
-  };
-
-  return { prisma: mockPrisma };
-});
-
-import { checkRateLimit, cleanupExpiredRateLimits } from "../src/lib/rate-limiter";
-import { prisma } from "../src/lib/prisma";
+import { checkRateLimit } from "../src/lib/rate-limiter";
 
 const CONFIG = { limit: 5, windowMs: 60_000 }; // 5 requests per minute
 
 describe("Rate Limiter", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    store.clear();
+    // Clear the in-memory store by reimporting
+    vi.resetModules();
   });
 
   describe("checkRateLimit", () => {
@@ -132,13 +83,6 @@ describe("Rate Limiter", () => {
       expect(result).toHaveProperty("resetAt");
       expect(typeof result.resetAt).toBe("number");
       expect(result.resetAt).toBeGreaterThan(Date.now());
-    });
-  });
-
-  describe("cleanupExpiredRateLimits", () => {
-    it("should call deleteMany without errors", async () => {
-      await cleanupExpiredRateLimits();
-      expect(prisma.rateLimit.deleteMany).toHaveBeenCalled();
     });
   });
 });
