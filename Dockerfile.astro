@@ -1,0 +1,32 @@
+# ── Astro SSR Dockerfile ──
+FROM node:20-alpine AS base
+WORKDIR /app
+
+# Install pnpm globally
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Install dependencies
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile --prod=false
+
+# Build Astro
+COPY . .
+RUN pnpm build
+
+# ── Production stage ──
+FROM node:20-alpine
+WORKDIR /app
+
+RUN apk add --no-cache tini
+USER node
+
+# Copy only production dependencies and build output
+COPY --from=base --chown=node:node /app/node_modules ./node_modules
+COPY --from=base --chown=node:node /app/dist ./dist
+COPY --from=base --chown=node:node /app/package.json ./package.json
+
+# Astro standalone server entry point
+EXPOSE 4321
+
+ENTRYPOINT ["tini", "--"]
+CMD ["node", "dist/server/entry.mjs"]

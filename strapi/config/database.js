@@ -1,10 +1,14 @@
-module.exports = ({ env }) => ({
-  connection: {
-    client: 'postgres',
+module.exports = ({ env }) => {
+  const useSSL = env('DATABASE_SSL', 'true') === 'true';
+
+  return {
     connection: {
-      connectionString: env('DATABASE_URL'),
-      ssl: { rejectUnauthorized: false }, // Neon requires SSL
+      client: 'postgres',
+      connection: {
+        connectionString: env('DATABASE_URL'),
+        ...(useSSL && { ssl: { rejectUnauthorized: false } }),
+      },
+      debug: false,
     },
-    debug: false,
-  },
-});
+  };
+};

@@ -99,14 +99,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
   response.headers.set("X-Request-Id", requestId);
 
   // CSP — restrict resource loading to same-origin + trusted CDNs + Strapi
+  // In production (DPM2/Docker), Strapi is behind same-origin at /strapi/
+  // In dev, Strapi runs on localhost:1337
+  const strapiOrigin = import.meta.env.PROD ? "" : " http://localhost:1337";
+
   response.headers.set(
     "Content-Security-Policy",
     "default-src 'self'; " +
     "script-src 'self' 'unsafe-inline'; " +
     "style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data: blob: http://localhost:1337; " +
+    `img-src 'self' data: blob:${strapiOrigin}; ` +
     "font-src 'self'; " +
-    "connect-src 'self' https://api.stripe.com http://localhost:1337; " +
+    `connect-src 'self' https://api.stripe.com${strapiOrigin}; ` +
     "frame-ancestors 'none'; " +
     "base-uri 'self'; " +
     "form-action 'self';"
