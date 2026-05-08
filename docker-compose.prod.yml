@@ -45,12 +45,6 @@ services:
         condition: service_healthy
     networks:
       - app-network
-    healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:1337/admin || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 120s
 
   # ── Astro SSR ──
   astro:
@@ -66,15 +60,14 @@ services:
       NODE_ENV: production
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost}
     depends_on:
-      strapi:
-        condition: service_healthy
+      - strapi
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:4321/ || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD-SHELL", "wget -q --tries=1 http://localhost:4321/ -O /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
       start_period: 30s
 
   # ── Nginx Reverse Proxy ──
