@@ -3,31 +3,56 @@ import HeaderLink from "./HeaderLink.astro";
 import Button from "../components/Button/index.astro";
 ---
 
-<header class="relative top-0 z-50 shadow-sm bg-sky-700">
-  <nav class="flex flex-row items-center px-10 py-4">
-    <a href="/"><h2 class="text-2xl font-bold mr-8 text-white">LOGO</h2></a>
-    <div class="flex flex-row items-center gap-5">
-      <HeaderLink
-        class="rounded-md p-2 border-b-2 border-transparent hover:bg-white hover:border-blue-600 hover:text-sky-600 transition-all duration-500 text-white"
-        href="/#inicio">Home</HeaderLink
-      >
-      <HeaderLink
-        class="rounded-md p-2 border-b-2 border-transparent hover:bg-white hover:border-blue-600 hover:text-sky-600 transition-all duration-500 text-white"
-        href="/#servicios">Our Services</HeaderLink
-      >
-      <HeaderLink
-        class="rounded-md p-2 border-b-2 border-transparent hover:bg-white hover:border-blue-600 hover:text-sky-600 transition-all duration-500 text-white"
-        href="/#nosotros">About Us</HeaderLink
-      >
-      <HeaderLink
-        class="rounded-md p-2 border-b-2 border-transparent hover:bg-white hover:border-blue-600 hover:text-sky-600 transition-all duration-500 text-white"
-        href="/#contacto">Contact Us</HeaderLink
-      >
+<header
+  id="main-header"
+  class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+>
+  <nav class="max-w-7xl mx-auto flex items-center px-6 py-4">
+    <!-- Logo -->
+    <a href="/" class="flex items-center gap-3 mr-10">
+      <div class="w-9 h-9 bg-sky-500 rounded-lg flex items-center justify-center shrink-0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      <span class="text-xl font-bold text-white tracking-tight">Roldans</span>
+    </a>
+
+    <!-- Nav links -->
+    <div class="hidden md:flex items-center gap-1 flex-1">
+      <HeaderLink class="px-4 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 text-sm font-medium" href="/#inicio">Home</HeaderLink>
+      <HeaderLink class="px-4 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 text-sm font-medium" href="/#servicios">Services</HeaderLink>
+      <HeaderLink class="px-4 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 text-sm font-medium" href="/#nosotros">About Us</HeaderLink>
+      <HeaderLink class="px-4 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 text-sm font-medium" href="/#contacto">Contact</HeaderLink>
     </div>
-    <div class="ml-auto">
+
+    <!-- Phone + CTA -->
+    <div class="ml-auto flex items-center gap-4">
+      <a href="tel:0466018580" class="hidden lg:flex items-center gap-2 text-white/80 hover:text-white text-sm font-medium transition-colors">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        0466 018 580
+      </a>
       <a href="/#contacto">
-        <Button text="Ask for a quote" />
+        <Button text="Get a Quote" />
       </a>
     </div>
   </nav>
 </header>
+
+<script>
+  const header = document.getElementById("main-header")!;
+
+  function updateHeader() {
+    if (window.scrollY > 60) {
+      header.classList.add("bg-slate-900/95", "backdrop-blur-sm", "shadow-lg");
+    } else {
+      header.classList.remove("bg-slate-900/95", "backdrop-blur-sm", "shadow-lg");
+    }
+  }
+
+  window.addEventListener("scroll", updateHeader, { passive: true });
+  updateHeader();
+</script>

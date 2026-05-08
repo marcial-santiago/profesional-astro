@@ -23,8 +23,15 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-/src/generated/prisma
+/prisma/client
 
-/src/generated/prisma
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/e2e/.auth/
 
-/src/generated/prisma
+# Test artifacts
+test-e2e-*.jpg
+test-e2e-*.csv
+test-csv-*.jpg

@@ -1,0 +1,131 @@
+---
+export const prerender = false;
+import BaseLayaout from "../../layouts/BaseLayaout.astro";
+import { stripe } from "../../lib/stripe";
+
+// Get session_id from URL
+const sessionId = Astro.url.searchParams.get("session_id");
+
+// Verify session exists (basic check)
+let session: any = null;
+let visitData: any = null;
+let error: string | null = null;
+
+if (sessionId && sessionId.startsWith("cs_")) {
+  try {
+    session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    // Try to verify payment and create visit
+    if (session.payment_status === "paid") {
+      try {
+        const response = await fetch(`${Astro.url.origin}/api/verify-payment?session_id=${sessionId}`);
+        if (response.ok) {
+          visitData = await response.json();
+        } else {
+          error = "Could not verify payment";
+        }
+      } catch (err) {
+        console.error("Error verifying payment:", err);
+        error = "Verification error";
+      }
+    }
+  } catch (err) {
+    console.error("Error retrieving session:", err);
+    error = "Session not found";
+  }
+} else if (!sessionId) {
+  error = "No session ID provided";
+}
+---
+
+<BaseLayaout>
+  <div class="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+    <div class="text-center max-w-sm">
+      {error ? (
+        <>
+          <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h1 class="text-2xl font-bold text-slate-900 mb-2">Payment Error</h1>
+          <p class="text-slate-500 text-sm mb-8">
+            {error}. Please contact us if you have any questions.
+          </p>
+          <a
+            href="/"
+            class="inline-block bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition"
+          >
+            Back to Home
+          </a>
+        </>
+      ) : !session ? (
+        <>
+          <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-amber-600 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+          <h1 class="text-2xl font-bold text-slate-900 mb-2">Verifying Payment...</h1>
+          <p class="text-slate-500 text-sm mb-8">
+            Please wait while we verify your payment.
+          </p>
+        </>
+      ) : session.payment_status !== "paid" ? (
+        <>
+          <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h1 class="text-2xl font-bold text-slate-900 mb-2">Payment Pending</h1>
+          <p class="text-slate-500 text-sm mb-8">
+            Your payment is being processed. We'll send you a confirmation email shortly.
+          </p>
+          <a
+            href="/"
+            class="inline-block bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition"
+          >
+            Back to Home
+          </a>
+        </>
+      ) : (
+        <>
+          <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h1 class="text-2xl font-bold text-slate-900 mb-2">Payment Successful!</h1>
+          <p class="text-slate-500 text-sm mb-8">
+            {visitData?.alreadyExisted
+              ? "Your visit has already been confirmed. We'll contact you soon to confirm the time."
+              : "We received your payment and visit request. We'll contact you soon to confirm the time."}
+          </p>
+          <div class="bg-white border border-slate-200 rounded-xl p-4 mb-6 text-left">
+            <h3 class="text-sm font-semibold text-slate-700 mb-2">Booking Details</h3>
+            <div class="space-y-1 text-sm">
+              <div class="flex justify-between">
+                <span class="text-slate-500">Status:</span>
+                <span class="font-medium text-slate-900">{visitData?.status || "Confirmed"}</span>
+              </div>
+              {visitData?.visitId && (
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Booking ID:</span>
+                  <span class="font-mono text-slate-900">#{visitData.visitId}</span>
+                </div>
+              )}
+            </div>
+          </div>
+          <a
+            href="/"
+            class="inline-block bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition"
+          >
+            Back to Home
+          </a>
+        </>
+      )}
+    </div>
+  </div>
+</BaseLayaout>

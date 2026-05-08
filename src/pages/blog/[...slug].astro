@@ -1,20 +1,33 @@
 ---
-import { type CollectionEntry, getCollection, render } from 'astro:content';
 import BlogPost from '../../layouts/BlogPost.astro';
+import { STRAPI_URL } from '../../config';
 
-export async function getStaticPaths() {
-	const posts = await getCollection('blog');
-	return posts.map((post) => ({
-		params: { slug: post.id },
-		props: post,
-	}));
+export const prerender = false;
+
+interface StrapiBlogPost {
+  id: number;
+  title: string;
+  slug: string;
+  description: string;
+  pubDate: string;
+  updatedDate: string | null;
+  content: string;
+  heroImage: { url: string } | null;
 }
-type Props = CollectionEntry<'blog'>;
 
-const post = Astro.props;
-const { Content } = await render(post);
+const { slug } = Astro.params;
+
+const res = await fetch(`${STRAPI_URL}/api/blog-posts?filters[slug][$eq]=${slug}&populate=heroImage`);
+const data = await res.json();
+const post: StrapiBlogPost | undefined = data.data?.[0];
+
+if (!post) {
+  return Astro.redirect("/404");
+}
+
+const { title, description, pubDate, heroImage, content } = post;
 ---
 
-<BlogPost {...post.data}>
-	<Content />
+<BlogPost title={title} description={description} pubDate={new Date(pubDate)} heroImage={heroImage?.url}>
+  <Fragment set:html={content} />
 </BlogPost>

@@ -4,6 +4,50 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
 import ServicesCards from "../components/ServicesCards/index.astro";
 import About from "../components/About/index.astro";
 import PrincipalForm from "../components/PrincipalForm/index.astro";
+import VisitScheduler from "../components/VisitScheduler.astro";
+import Map from "../components/Map/index.astro";
+import { STRAPI_URL, strapiImage } from "../config";
+
+interface WorkTypeImage {
+  url: string;
+}
+
+interface StrapiWorkType {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  category: string;
+  duration: number;
+  price: number;
+  isActive: boolean;
+  image: WorkTypeImage | null;
+}
+
+// Fetch active services grouped by category from Strapi
+const res = await fetch(`${STRAPI_URL}/api/work-types?populate=image&filters[isActive][$eq]=true&sort[0]=category:asc&sort[1]=name:asc`);
+const strapiData = await res.json();
+const strapiWorkTypes: StrapiWorkType[] = strapiData.data || [];
+
+// Transform Strapi response to match existing format
+const workTypes = strapiWorkTypes.map((wt) => ({
+  id: wt.id,
+  name: wt.name,
+  slug: wt.slug,
+  description: wt.description,
+  category: wt.category,
+  duration: wt.duration,
+  price: wt.price,
+  isActive: wt.isActive,
+  image: wt.image ? { path: strapiImage(wt.image.url) } : null,
+}));
+
+type WorkType = typeof workTypes[number];
+const grouped = workTypes.reduce((acc: Record<string, WorkType[]>, wt: WorkType) => {
+  if (!acc[wt.category]) acc[wt.category] = [];
+  acc[wt.category].push(wt);
+  return acc;
+}, {} as Record<string, WorkType[]>);
 ---
 
 <BaseLayaout>
@@ -11,12 +55,29 @@ import PrincipalForm from "../components/PrincipalForm/index.astro";
     <BannerPrincipal />
   </section>
   <section id="servicios">
-    <ServicesCards />
+    <ServicesCards grouped={grouped} />
   </section>
   <section id="nosotros">
     <About />
   </section>
+  <section id="agenda" class="py-20 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-slate-900 md:text-4xl mb-4">
+          Book Your Visit
+        </h2>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+          Select the service and time that works best for you.
+          We'll confirm your appointment instantly.
+        </p>
+      </div>
+      <VisitScheduler />
+    </div>
+  </section>
   <section id="contacto">
     <PrincipalForm />
+  </section>
+  <section id="ubicacion">
+    <Map />
   </section>
 </BaseLayaout>

@@ -1,75 +1,118 @@
 ---
 import Button from "../Button/index.astro";
-import DineroIcon from "../../assets/icons8-dinero-50.png";
-import ExperienciaIcon from "../../assets/icons8-experiencia-50.png";
-import RelojIcon from "../../assets/icons8-reloj-50.png";
-import GarantiaIcon from "../../assets/icons8-garantia-50.png";
+
+const features = [
+  {
+    title: "Fast Response",
+    desc: "Same-day and next-day availability. We show up on time, every time.",
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+  },
+  {
+    title: "Transparent Pricing",
+    desc: "No hidden fees. You get a clear quote before any work begins.",
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+  },
+  {
+    title: "Certified Professionals",
+    desc: "Our team is fully licensed, insured and trained to Australian standards.",
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+  },
+  {
+    title: "Satisfaction Guaranteed",
+    desc: "Not happy? We come back and make it right. Your satisfaction is our commitment.",
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+  },
+];
 ---
 
-<section class="flex flex-col items-center justify-center p-10 bg-white">
-  <article class="w-full min-h-132.5 flex flex-col justify-center px-10">
-    <div class="w-full">
-      <h2 class="font-bold text-5xl mb-5 w-full text-sky-700">
-        Why Choose Us?
-      </h2>
-      <!-- <ul class="flex flex-row justify-between">
-        <li class="font-normal">Fast and direct attention</li>
-        <li>Clear budgets without surprises</li>
-        <li>Professionals with proven experience</li>
-        <li>Quality results guaranteed</li>
-      </ul> -->
-      <div class="flex flex-row w-full justify-around gap-5">
-        <div
-          class="flex w-full flex-col items-center px-5 max-w-sm rounded-2xl border-sky-700 backdrop-blur-sm bg-white/80 shadow-lg shadow-sky-800"
-        >
-          <img src={DineroIcon.src} class="h-12 w-12 my-5" />
-          <p class="mb-4 text-xl font-semibold text-center">
-            We are committed to providing fast and direct attention to all our
-            clients.
-          </p>
-        </div>
-        <div
-          class="flex w-full flex-col items-center px-5 max-w-sm rounded-2xl border-sky-700 backdrop-blur-sm bg-white/80 shadow-lg shadow-sky-800"
-        >
-          <img src={ExperienciaIcon.src} class="h-12 w-12 my-5" />
-          <p class="mb-4 text-xl font-semibold text-center">
-            Our team of professionals has proven experience in the field,
-            ensuring quality results that meet your expectations.
-          </p>
-        </div>
-        <div
-          class="flex w-full flex-col items-center px-5 max-w-sm rounded-2xl border-sky-700 backdrop-blur-sm bg-white/80 shadow-lg shadow-sky-800"
-        >
-          <img src={RelojIcon.src} class="h-12 w-12 my-5" />
-          <p class="mb-4 text-xl font-semibold text-center">
-            We offer clear budgets without surprises, so you can plan your
-            projects with confidence.
-          </p>
-        </div>
-        <div
-          class="flex w-full flex-col items-center px-5 max-w-sm rounded-2xl border-sky-700 backdrop-blur-sm bg-white/80 shadow-lg shadow-sky-800"
-        >
-          <img src={GarantiaIcon.src} class="h-12 w-12 my-5" />
-          <p class="mb-4 text-xl font-semibold text-center">
-            Choose us for a reliable and efficient service that prioritizes your
-            satisfaction.
-          </p>
+<section class="bg-white py-24 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+
+      <!-- Left: text -->
+      <div>
+        <p class="text-sky-600 font-semibold text-sm uppercase tracking-widest mb-3">Why Choose Us</p>
+        <h2 class="text-4xl md:text-5xl font-bold text-slate-900 leading-tight mb-6">
+          Quality work you can count on
+        </h2>
+        <p class="text-slate-500 text-lg leading-relaxed mb-10">
+          With over 10 years serving Brisbane, we've built a reputation for showing up, doing the job right, and leaving your home better than we found it.
+        </p>
+
+        <!-- Features grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {features.map((f) => (
+            <div class="flex gap-4">
+              <div class="w-11 h-11 bg-sky-50 rounded-xl flex items-center justify-center text-sky-600 shrink-0">
+                <Fragment set:html={f.icon} />
+              </div>
+              <div>
+                <h3 class="font-bold text-slate-900 mb-1">{f.title}</h3>
+                <p class="text-slate-500 text-sm leading-relaxed">{f.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
+
+      <!-- Right: stats card -->
+      <div class="relative">
+        <div class="bg-slate-900 rounded-3xl p-10 text-white">
+          <p class="text-slate-400 text-sm uppercase tracking-widest mb-8">Our track record</p>
+
+          <div class="grid grid-cols-2 gap-8 mb-10">
+            <div>
+              <p class="text-5xl font-bold text-white mb-1">10<span class="text-sky-400">+</span></p>
+              <p class="text-slate-400 text-sm">Years in Brisbane</p>
+            </div>
+            <div>
+              <p class="text-5xl font-bold text-white mb-1">500<span class="text-sky-400">+</span></p>
+              <p class="text-slate-400 text-sm">Happy clients</p>
+            </div>
+            <div>
+              <p class="text-5xl font-bold text-white mb-1">3<span class="text-sky-400">+</span></p>
+              <p class="text-slate-400 text-sm">Services offered</p>
+            </div>
+            <div>
+              <p class="text-5xl font-bold text-white mb-1">7<span class="text-sky-400">d</span></p>
+              <p class="text-slate-400 text-sm">Available all week</p>
+            </div>
+          </div>
+
+          <!-- Testimonial -->
+          <div class="border-t border-slate-700 pt-8">
+            <p class="text-slate-300 italic text-sm leading-relaxed mb-4">
+              "Roldans did an incredible job on our bathroom renovation. Professional, on time, and the result was perfect. Highly recommended."
+            </p>
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 bg-sky-500 rounded-full flex items-center justify-center text-white font-bold text-sm">S</div>
+              <div>
+                <p class="text-white font-semibold text-sm">Sarah M.</p>
+                <p class="text-slate-500 text-xs">Mount Gravatt, Brisbane</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Decorative accent -->
+        <div class="absolute -top-4 -right-4 w-24 h-24 bg-sky-500/10 rounded-full blur-2xl -z-10"></div>
+        <div class="absolute -bottom-4 -left-4 w-32 h-32 bg-sky-500/10 rounded-full blur-2xl -z-10"></div>
+      </div>
     </div>
-  </article>
+  </div>
 </section>
 
-<article
-  class="w-full min-h-[250px] flex flex-row items-center justify-between p-10 bg-gradient-to-r from-sky-700 via-sky-700 to-[#ffffff00]"
->
-  <div class="flex flex-col px-[100px]">
-    <p class="text-white max-w-[734px] text-3xl font-bold">
-      Contactanos ahora mismo y recibe una respuesta rapida y atencion
-      personalizada.
-    </p>
+<!-- CTA Banner -->
+<section class="bg-sky-600 py-16 px-6">
+  <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+    <div>
+      <h2 class="text-3xl font-bold text-white mb-2">Ready to get started?</h2>
+      <p class="text-sky-100">Contact us today and get a personalised quote within 24 hours.</p>
+    </div>
+    <div class="shrink-0">
+      <a href="/#contacto">
+        <Button text="Get a Free Quote" />
+      </a>
+    </div>
   </div>
-  <div class="w-full max-w-[460px]">
-    <Button text="Ask for a quote" />
-  </div>
-</article>
+</section>
