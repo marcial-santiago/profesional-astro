@@ -6,9 +6,11 @@
  */
 
 export const STRAPI_URL =
+  (typeof process !== 'undefined' ? process.env.STRAPI_URL : undefined) ||
   import.meta.env.STRAPI_URL || 'http://localhost:1337';
 
 export const STRIPE_API_URL =
+  (typeof process !== 'undefined' ? process.env.STRIPE_API_URL : undefined) ||
   import.meta.env.STRIPE_API_URL || 'http://localhost:4321';
 
 /**

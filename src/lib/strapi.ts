@@ -5,7 +5,7 @@
  * Only call from API routes — never expose the token to the browser.
  */
 
-const STRAPI_URL = import.meta.env.STRAPI_URL || "http://localhost:1337";
+const STRAPI_URL = process.env.STRAPI_URL || import.meta.env.STRAPI_URL || "http://localhost:1337";
 const STRAPI_API_TOKEN = import.meta.env.STRAPI_API_TOKEN;
 
 if (!STRAPI_API_TOKEN) {
