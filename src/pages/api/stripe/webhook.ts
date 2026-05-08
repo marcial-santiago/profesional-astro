@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
-import { stripe } from "../../lib/stripe";
-import { strapiFetch, findVisitsByStripeSession, createVisit } from "../../lib/strapi";
-import { successResponse, errorResponse } from "../../utils/response.utils";
+import { stripe } from "../../../lib/stripe";
+import { strapiFetch, findVisitsByStripeSession, createVisit } from "../../../lib/strapi";
+import { successResponse, errorResponse } from "../../../utils/response.utils";
 
 export const prerender = false;
 

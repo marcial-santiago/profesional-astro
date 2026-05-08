@@ -1,12 +1,12 @@
 import type { APIRoute } from "astro";
-import { stripe } from "../../lib/stripe";
-import { getWorkType } from "../../lib/strapi";
-import { ALLOWED_ORIGINS } from "../../constants";
+import { stripe } from "../../../lib/stripe";
+import { getWorkType } from "../../../lib/strapi";
+import { ALLOWED_ORIGINS } from "../../../constants";
 import {
   errorResponse,
   internalErrorResponse,
   successResponse,
-} from "../../utils/response.utils";
+} from "../../../utils/response.utils";
 import { z } from "zod";
 
 // Default price in USD for any service not explicitly priced
