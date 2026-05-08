@@ -46,11 +46,11 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:1337/_health || exit 1"]
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:1337/admin || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
+      start_period: 120s
 
   # ── Astro SSR ──
   astro:
@@ -71,7 +71,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:4321/ || exit 1"]
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:4321/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
