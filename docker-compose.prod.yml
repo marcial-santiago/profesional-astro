@@ -40,6 +40,8 @@ services:
       NODE_ENV: production
       HOST: 0.0.0.0
       PORT: 1337
+    ports:
+      - "1337:1337"
     depends_on:
       postgres:
         condition: service_healthy
