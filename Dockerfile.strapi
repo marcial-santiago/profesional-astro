@@ -20,7 +20,6 @@ USER node
 # Copy built artifacts from build stage
 COPY --from=base --chown=node:node /app/strapi/node_modules ./node_modules
 COPY --from=base --chown=node:node /app/strapi/build ./build
-COPY --from=base --chown=node:node /app/strapi/dist ./dist
 COPY --from=base --chown=node:node /app/strapi/src ./src
 COPY --from=base --chown=node:node /app/strapi/config ./config
 COPY --from=base --chown=node:node /app/strapi/package.json ./package.json
