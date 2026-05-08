@@ -24,6 +24,10 @@ COPY --from=base --chown=node:node /app/strapi/src ./src
 COPY --from=base --chown=node:node /app/strapi/config ./config
 COPY --from=base --chown=node:node /app/strapi/package.json ./package.json
 COPY --from=base --chown=node:node /app/strapi/public ./public
+COPY --from=base --chown=node:node /app/strapi/database ./database
+
+# Strapi needs to write to database/ and .cache/ at runtime
+RUN mkdir -p /app/strapi/.cache && chown -R node:node /app/strapi
 
 EXPOSE 1337
 
