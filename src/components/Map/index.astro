@@ -31,7 +31,7 @@ const mapUrl = import.meta.env.GOOGLE_MAPS_EMBED_URL;
 )}
 
 {mapUrl && (
-  <script define:vars={{ mapUrl }}>
+  <script is:inline define:vars={{ mapUrl }}>
     const container = document.querySelector("[data-map-container]");
     if (!container) return;
 

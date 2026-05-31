@@ -1,11 +1,10 @@
 ---
-import { Image } from 'astro:assets';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
 import Header from '../../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
-import { STRAPI_URL } from '../../config';
+import { STRAPI_URL, normalizeStrapiMedia, strapiQuery } from '../../config';
 
 interface StrapiBlogPost {
   id: number;
@@ -13,12 +12,28 @@ interface StrapiBlogPost {
   slug: string;
   description: string;
   pubDate: string;
-  heroImage: { url: string } | null;
+  heroImage: {
+    url?: string | null;
+    alternativeText?: string | null;
+    width?: number | null;
+    height?: number | null;
+  } | null;
 }
 
-const res = await fetch(`${STRAPI_URL}/api/blog-posts?populate=heroImage&sort[0]=pubDate:desc`);
+const blogQuery = strapiQuery({
+  "populate[heroImage][fields][0]": "url",
+  "populate[heroImage][fields][1]": "alternativeText",
+  "populate[heroImage][fields][2]": "width",
+  "populate[heroImage][fields][3]": "height",
+  "sort[0]": "pubDate:desc",
+});
+const res = await fetch(`${STRAPI_URL}/api/blog-posts?${blogQuery}`);
 const data = await res.json();
 const posts: StrapiBlogPost[] = data.data || [];
+const mappedPosts = posts.map((post) => ({
+	post,
+	heroMedia: normalizeStrapiMedia(post.heroImage, post.title),
+}));
 ---
 
 <!doctype html>
@@ -101,11 +116,17 @@ const posts: StrapiBlogPost[] = data.data || [];
 			<section>
 				<ul>
 					{
-						posts.map((post) => (
+						mappedPosts.map(({ post, heroMedia }) => (
 							<li>
 								<a href={`/blog/${post.slug}/`}>
-									{post.heroImage && (
-										<Image width={720} height={360} src={post.heroImage.url} alt="" />
+									{heroMedia && (
+										<img
+											width={720}
+											height={360}
+											src={heroMedia.url}
+											alt={heroMedia.alt}
+											loading="lazy"
+										/>
 									)}
 									<h4 class="title">{post.title}</h4>
 									<p class="date">

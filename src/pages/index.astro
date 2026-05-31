@@ -6,10 +6,13 @@ import About from "../components/About/index.astro";
 import PrincipalForm from "../components/PrincipalForm/index.astro";
 import VisitScheduler from "../components/VisitScheduler.astro";
 import Map from "../components/Map/index.astro";
-import { STRAPI_URL, strapiImage } from "../config";
+import { STRAPI_URL, normalizeStrapiMedia, strapiQuery } from "../config";
 
 interface WorkTypeImage {
-  url: string;
+  url?: string | null;
+  alternativeText?: string | null;
+  width?: number | null;
+  height?: number | null;
 }
 
 interface StrapiWorkType {
@@ -25,22 +28,34 @@ interface StrapiWorkType {
 }
 
 // Fetch active services grouped by category from Strapi
-const res = await fetch(`${STRAPI_URL}/api/work-types?populate=image&filters[isActive][$eq]=true&sort[0]=category:asc&sort[1]=name:asc`);
+const workTypesQuery = strapiQuery({
+  "populate[image][fields][0]": "url",
+  "populate[image][fields][1]": "alternativeText",
+  "populate[image][fields][2]": "width",
+  "populate[image][fields][3]": "height",
+  "filters[isActive][$eq]": true,
+  "sort[0]": "category:asc",
+  "sort[1]": "name:asc",
+});
+const res = await fetch(`${STRAPI_URL}/api/work-types?${workTypesQuery}`);
 const strapiData = await res.json();
 const strapiWorkTypes: StrapiWorkType[] = strapiData.data || [];
 
 // Transform Strapi response to match existing format
-const workTypes = strapiWorkTypes.map((wt) => ({
-  id: wt.id,
-  name: wt.name,
-  slug: wt.slug,
-  description: wt.description,
-  category: wt.category,
-  duration: wt.duration,
-  price: wt.price,
-  isActive: wt.isActive,
-  image: wt.image ? { path: strapiImage(wt.image.url) } : null,
-}));
+const workTypes = strapiWorkTypes.map((wt) => {
+  const media = normalizeStrapiMedia(wt.image, wt.name);
+  return {
+    id: wt.id,
+    name: wt.name,
+    slug: wt.slug,
+    description: wt.description,
+    category: wt.category,
+    duration: wt.duration,
+    price: wt.price,
+    isActive: wt.isActive,
+    image: media ? { path: media.url } : null,
+  };
+});
 
 type WorkType = typeof workTypes[number];
 const grouped = workTypes.reduce((acc: Record<string, WorkType[]>, wt: WorkType) => {

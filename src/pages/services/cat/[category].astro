@@ -2,7 +2,7 @@
 export const prerender = false;
 
 import BaseLayout from "../../../layouts/BaseLayaout.astro";
-import { STRAPI_URL, strapiImage } from "../../../config";
+import { STRAPI_URL, normalizeStrapiMedia, strapiQuery } from "../../../config";
 import Button from "../../../components/Button/index.astro";
 import PrincipalForm from "../../../components/PrincipalForm/index.astro";
 
@@ -17,7 +17,10 @@ export function getStaticPaths() {
 const { category } = Astro.params;
 
 interface WorkTypeImage {
-  url: string;
+  url?: string | null;
+  alternativeText?: string | null;
+  width?: number | null;
+  height?: number | null;
 }
 
 interface StrapiWorkType {
@@ -33,21 +36,33 @@ interface StrapiWorkType {
 }
 
 // Fetch services by category from Strapi
-const res = await fetch(`${STRAPI_URL}/api/work-types?filters[category][$eq]=${category}&filters[isActive][$eq]=true&populate=image&sort[name]=asc`);
+const categoryQuery = strapiQuery({
+  "filters[category][$eq]": category || "",
+  "filters[isActive][$eq]": true,
+  "populate[image][fields][0]": "url",
+  "populate[image][fields][1]": "alternativeText",
+  "populate[image][fields][2]": "width",
+  "populate[image][fields][3]": "height",
+  "sort[name]": "asc",
+});
+const res = await fetch(`${STRAPI_URL}/api/work-types?${categoryQuery}`);
 const strapiData = await res.json();
 const strapiWorkTypes: StrapiWorkType[] = strapiData.data || [];
 
-const services = strapiWorkTypes.map((wt) => ({
-  id: wt.id,
-  name: wt.name,
-  slug: wt.slug,
-  description: wt.description,
-  category: wt.category,
-  duration: wt.duration,
-  price: wt.price,
-  isActive: wt.isActive,
-  image: wt.image ? { path: strapiImage(wt.image.url) } : null,
-}));
+const services = strapiWorkTypes.map((wt) => {
+  const media = normalizeStrapiMedia(wt.image, wt.name);
+  return {
+    id: wt.id,
+    name: wt.name,
+    slug: wt.slug,
+    description: wt.description,
+    category: wt.category,
+    duration: wt.duration,
+    price: wt.price,
+    isActive: wt.isActive,
+    image: media ? { path: media.url } : null,
+  };
+});
 
 type WorkType = typeof services[number];
 

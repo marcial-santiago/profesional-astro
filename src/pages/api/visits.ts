@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { createVisit } from "../../lib/strapi";
+import { createVisit, getWorkType, strapiFetch } from "../../lib/strapi";
 import { ALLOWED_ORIGINS } from "../../constants";
 import {
   errorResponse,
@@ -13,10 +13,10 @@ export const prerender = false;
 const bodySchema = z.object({
   nombre: z.string().min(3).max(100),
   telefono: z.string().min(8).max(20),
-  email: z.string().email().or(z.literal("")).optional(),
+  email: z.email().or(z.literal("")).optional(),
   mensaje: z.string().max(500).optional(),
-  date: z.string(), // ISO datetime: YYYY-MM-DDTHH:mm
-  time: z.string(), // HH:mm
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // YYYY-MM-DD
+  time: z.string().regex(/^\d{2}:\d{2}$/), // HH:mm
   workTypeId: z.number().int().positive(), // accepted but not sent to Strapi
   status: z.enum(["pending", "confirmed", "cancelled"]).optional().default("pending"),
   // Honeypot
@@ -49,6 +49,24 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
+    const workType = await getWorkType(workTypeId);
+    if (!workType || !workType.isActive) {
+      return errorResponse("Service not available", 400);
+    }
+
+    const slotsRes = await strapiFetch(
+      `/api/work-types/slots?date=${encodeURIComponent(date)}&workTypeId=${encodeURIComponent(String(workTypeId))}`,
+    );
+    if (!slotsRes.ok) {
+      return errorResponse("Could not validate availability", slotsRes.status);
+    }
+
+    const slotsData = await slotsRes.json().catch(() => ({ data: [] }));
+    const availableSlots = Array.isArray(slotsData.data) ? slotsData.data : [];
+    if (!availableSlots.includes(time)) {
+      return errorResponse("Selected time is not available", 409);
+    }
+
     // Combine date and time into ISO datetime with timezone
     const datetime = `${date}T${time}:00`;
 

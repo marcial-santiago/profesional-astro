@@ -1,6 +1,6 @@
 ---
 import BlogPost from '../../layouts/BlogPost.astro';
-import { STRAPI_URL } from '../../config';
+import { STRAPI_URL, normalizeStrapiMedia, strapiQuery } from '../../config';
 
 export const prerender = false;
 
@@ -12,12 +12,24 @@ interface StrapiBlogPost {
   pubDate: string;
   updatedDate: string | null;
   content: string;
-  heroImage: { url: string } | null;
+  heroImage: {
+    url?: string | null;
+    alternativeText?: string | null;
+    width?: number | null;
+    height?: number | null;
+  } | null;
 }
 
 const { slug } = Astro.params;
 
-const res = await fetch(`${STRAPI_URL}/api/blog-posts?filters[slug][$eq]=${slug}&populate=heroImage`);
+const blogDetailQuery = strapiQuery({
+  "filters[slug][$eq]": slug || "",
+  "populate[heroImage][fields][0]": "url",
+  "populate[heroImage][fields][1]": "alternativeText",
+  "populate[heroImage][fields][2]": "width",
+  "populate[heroImage][fields][3]": "height",
+});
+const res = await fetch(`${STRAPI_URL}/api/blog-posts?${blogDetailQuery}`);
 const data = await res.json();
 const post: StrapiBlogPost | undefined = data.data?.[0];
 
@@ -26,8 +38,9 @@ if (!post) {
 }
 
 const { title, description, pubDate, heroImage, content } = post;
+const heroMedia = normalizeStrapiMedia(heroImage, title);
 ---
 
-<BlogPost title={title} description={description} pubDate={new Date(pubDate)} heroImage={heroImage?.url}>
+<BlogPost title={title} description={description} pubDate={new Date(pubDate)} heroImage={heroMedia?.url}>
   <Fragment set:html={content} />
 </BlogPost>

@@ -15,6 +15,12 @@ export const GET: APIRoute = async ({ url }) => {
   if (!date || !workTypeId) {
     return errorResponse("Date and workTypeId are required", 400);
   }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(`${date}T00:00:00`))) {
+    return errorResponse("Invalid date", 400);
+  }
+  if (!/^\d+$/.test(workTypeId) || Number(workTypeId) <= 0) {
+    return errorResponse("Invalid workTypeId", 400);
+  }
 
   try {
     const res = await strapiFetch(
