@@ -1,0 +1,6 @@
+<svg width="148" height="40" viewBox="0 0 148 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Roldans">
+  <rect x="1" y="1" width="38" height="38" rx="10" fill="#0EA5E9"/>
+  <path d="M10 19.5L20 11.5L30 19.5V31C30 32.1046 29.1046 33 28 33H12C10.8954 33 10 32.1046 10 31V19.5Z" stroke="white" stroke-width="2.6" stroke-linejoin="round"/>
+  <path d="M16.5 33V24H23.5V33" stroke="white" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="48" y="25" fill="#E0F2FE" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="800" letter-spacing="-0.45">Roldans</text>
+</svg>
