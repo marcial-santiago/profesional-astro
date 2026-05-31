@@ -8,6 +8,7 @@ import {
   successResponse,
 } from "../../../utils/response.utils";
 import { z } from "zod";
+import { createHash, randomUUID } from "node:crypto";
 
 // Default price in USD for any service not explicitly priced
 const DEFAULT_SERVICE_PRICE = 10;
@@ -15,12 +16,12 @@ const DEFAULT_SERVICE_PRICE = 10;
 export const prerender = false;
 
 const bodySchema = z.object({
-  workTypeName: z.string().min(1),
-  price: z.number().positive().optional(),
+  workTypeName: z.string().min(1).optional(), // legacy client field, ignored for Stripe name
+  price: z.number().positive().optional(), // legacy client field, ignored for Stripe price
   // User data
   nombre: z.string().min(3).max(100),
   telefono: z.string().min(1),
-  email: z.string().email().or(z.literal("")).optional(),
+  email: z.email().or(z.literal("")).optional(),
   mensaje: z.string().max(500).optional(),
   // Visit data
   date: z.string(),
@@ -46,7 +47,6 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const {
-    workTypeName,
     price: clientPrice,
     nombre,
     telefono,
@@ -74,35 +74,43 @@ export const POST: APIRoute = async ({ request }) => {
   }
   const origin = requestOrigin;
 
+  const idempotencySeed = `${workTypeId}|${date}|${time}|${telefono}|${nombre}`;
+  const idempotencyKey = createHash("sha256").update(idempotencySeed).digest("hex");
+  const clientReferenceId = randomUUID();
+
   try {
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      line_items: [
-        {
-          quantity: 1,
-          price_data: {
-            currency: "usd",
-            unit_amount: amountInCents,
-            product_data: {
-              name: workTypeName,
-              description: "Professional technical visit",
+    const session = await stripe.checkout.sessions.create(
+      {
+        mode: "payment",
+        line_items: [
+          {
+            quantity: 1,
+            price_data: {
+              currency: "usd",
+              unit_amount: amountInCents,
+              product_data: {
+                name: workType.name,
+                description: "Professional technical visit",
+              },
             },
           },
+        ],
+        success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/checkout`,
+        client_reference_id: clientReferenceId,
+        // Store visit data in metadata for webhook processing
+        metadata: {
+          nombre,
+          telefono,
+          email: email || "",
+          mensaje: mensaje || "",
+          date,
+          time,
+          workTypeId: workTypeId.toString(),
         },
-      ],
-      success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/checkout`,
-      // Store visit data in metadata for webhook processing
-      metadata: {
-        nombre,
-        telefono,
-        email: email || "",
-        mensaje: mensaje || "",
-        date,
-        time,
-        workTypeId: workTypeId.toString(),
       },
-    });
+      { idempotencyKey }
+    );
 
     return successResponse({ url: session.url });
   } catch (error) {

@@ -67,9 +67,20 @@ export async function findVisitsByStripeSession(sessionId: string): Promise<any[
 }
 
 /**
+ * Find visits by stripeEventId (secondary idempotency guard).
+ */
+export async function findVisitsByStripeEvent(eventId: string): Promise<any[]> {
+  const res = await strapiFetch(
+    `/api/visits?filters[stripeEventId][$eq]=${encodeURIComponent(eventId)}`
+  );
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.data || [];
+}
+
+/**
  * Create a visit in Strapi.
- * Note: workType is NOT sent to Strapi due to v5 relation format issues.
- * Service info is stored in Stripe metadata instead.
+ * Includes workType relation when available.
  */
 export async function createVisit(data: {
   nombre: string;
@@ -77,21 +88,26 @@ export async function createVisit(data: {
   email?: string;
   mensaje?: string;
   date: string;
-  workType?: number; // kept for backward compat but not sent to Strapi
+  workType?: number;
   status: string;
   stripeSessionId?: string;
   stripeEventId?: string;
 }): Promise<any> {
+  const baseData = {
+    nombre: data.nombre,
+    telefono: data.telefono,
+    mensaje: data.mensaje || "",
+    date: data.date,
+    status: data.status,
+    ...(data.email && { email: data.email }),
+    ...(data.stripeSessionId && { stripeSessionId: data.stripeSessionId }),
+    ...(data.stripeEventId && { stripeEventId: data.stripeEventId }),
+  };
+
   const body = {
     data: {
-      nombre: data.nombre,
-      telefono: data.telefono,
-      mensaje: data.mensaje || "",
-      date: data.date,
-      status: data.status,
-      ...(data.email && { email: data.email }),
-      ...(data.stripeSessionId && { stripeSessionId: data.stripeSessionId }),
-      ...(data.stripeEventId && { stripeEventId: data.stripeEventId }),
+      ...baseData,
+      ...(data.workType && { workType: data.workType }),
     },
   };
 
@@ -105,6 +121,33 @@ export async function createVisit(data: {
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
     console.error("[Strapi] createVisit failed:", JSON.stringify(error, null, 2));
+
+    // Fallback relation payload for Strapi v5 relation parser differences.
+    if (data.workType) {
+      const fallbackBody = {
+        data: {
+          ...baseData,
+          workType: { connect: [data.workType] },
+        },
+      };
+      const fallbackRes = await strapiFetch("/api/visits", {
+        method: "POST",
+        body: JSON.stringify(fallbackBody),
+      });
+      if (fallbackRes.ok) {
+        return fallbackRes.json();
+      }
+
+      const fallbackErr = await fallbackRes.json().catch(() => ({}));
+      console.error("[Strapi] createVisit fallback failed:", JSON.stringify(fallbackErr, null, 2));
+      const fbMsg =
+        fallbackErr.error?.message ||
+        fallbackErr.message ||
+        fallbackErr.error ||
+        `Strapi error: ${fallbackRes.status}`;
+      throw new Error(typeof fbMsg === "string" ? fbMsg : JSON.stringify(fbMsg));
+    }
+
     const msg = error.error?.message || error.message || error.error || `Strapi error: ${res.status}`;
     throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
   }

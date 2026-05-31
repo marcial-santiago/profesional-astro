@@ -20,6 +20,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const { request, url } = context;
   const { pathname } = url;
   const method = request.method;
+  const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const isHttps = url.protocol === "https:" || forwardedProto === "https";
 
   // ── 0. Generate request ID for correlation ────────────────────────────────
   const requestId = crypto.randomUUID();
@@ -87,7 +89,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (!hasCsrfCookie) {
     const newToken = generateCsrfToken();
     response.headers.set("Set-Cookie",
-      `${CSRF_COOKIE_NAME}=${newToken}; Path=/; SameSite=Strict; ${import.meta.env.PROD ? "Secure; " : ""}Max-Age=86400`
+      `${CSRF_COOKIE_NAME}=${newToken}; Path=/; SameSite=Strict; ${isHttps ? "Secure; " : ""}Max-Age=86400`
     );
   }
 
@@ -117,7 +119,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   );
 
   // HSTS — force HTTPS (production only)
-  if (import.meta.env.PROD) {
+  if (import.meta.env.PROD && isHttps) {
     response.headers.set(
       "Strict-Transport-Security",
       "max-age=31536000; includeSubDomains; preload"

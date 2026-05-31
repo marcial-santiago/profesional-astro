@@ -32,6 +32,13 @@ export default defineConfig({
       },
       dependencies: ["setup"],
     },
+    {
+      name: "chromium-noauth",
+      testMatch: /checkout-stripe\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+      },
+    },
   ],
 
   // Run dev server before starting tests
@@ -40,5 +47,10 @@ export default defineConfig({
     url: "http://localhost:4321",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    env: {
+      ...process.env,
+      ASTRO_TELEMETRY_DISABLED: "1",
+      XDG_CONFIG_HOME: process.env.XDG_CONFIG_HOME || "/tmp",
+    },
   },
 });
