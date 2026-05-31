@@ -2,14 +2,17 @@
 FROM node:20-alpine AS base
 WORKDIR /app
 
+ENV ASTRO_TELEMETRY_DISABLED=1
+
 # Install pnpm globally
-RUN corepack enable && corepack prepare pnpm@10.13.1 --activate
+RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
 
 # Install dependencies
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod=false
 
-# Build Astro
+# Build Astro. Runtime secrets are injected by docker compose; build must not depend
+# on a local .env file because .env is intentionally excluded from the image.
 COPY . .
 RUN pnpm build
 
@@ -17,19 +20,20 @@ RUN pnpm build
 FROM node:20-alpine
 WORKDIR /app
 
-RUN apk add --no-cache tini
-USER node
+ENV NODE_ENV=production \
+    HOST=0.0.0.0 \
+    PORT=4321 \
+    ASTRO_TELEMETRY_DISABLED=1
 
-# Copy only production dependencies and build output
+RUN apk add --no-cache tini wget
+
+# Copy built standalone server and runtime dependencies.
 COPY --from=base --chown=node:node /app/node_modules ./node_modules
 COPY --from=base --chown=node:node /app/dist ./dist
 COPY --from=base --chown=node:node /app/package.json ./package.json
 
-# Astro standalone server entry point
+USER node
 EXPOSE 4321
-
-ENV HOST=0.0.0.0
-ENV PORT=4321
 
 ENTRYPOINT ["tini", "--"]
 CMD ["node", "dist/server/entry.mjs"]

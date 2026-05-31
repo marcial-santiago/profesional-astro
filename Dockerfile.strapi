@@ -2,34 +2,41 @@
 FROM node:20-alpine AS base
 WORKDIR /app/strapi
 
-# Install dependencies
-COPY strapi/package.json strapi/package-lock.json ./
-RUN npm ci --only=production
+ENV STRAPI_TELEMETRY_DISABLED=true
 
-# Build Strapi admin panel
+# Native deps needed by sharp/better-sqlite3 on Alpine and health checks at runtime.
+RUN apk add --no-cache python3 make g++ vips-dev
+
+COPY strapi/package.json strapi/package-lock.json ./
+RUN npm ci
+
 COPY strapi/ ./
-RUN npm run build
+RUN mkdir -p public/uploads && npm run build && npm prune --omit=dev
 
 # ── Production stage ──
 FROM node:20-alpine
 WORKDIR /app/strapi
 
-RUN apk add --no-cache tini
+ENV NODE_ENV=production \
+    HOST=0.0.0.0 \
+    PORT=1337 \
+    STRAPI_TELEMETRY_DISABLED=true
 
-# Copy built artifacts from build stage
+RUN apk add --no-cache tini wget vips
+
 COPY --from=base --chown=node:node /app/strapi/node_modules ./node_modules
 COPY --from=base --chown=node:node /app/strapi/build ./build
 COPY --from=base --chown=node:node /app/strapi/src ./src
 COPY --from=base --chown=node:node /app/strapi/config ./config
-COPY --from=base --chown=node:node /app/strapi/package.json ./package.json
-COPY --from=base --chown=node:node /app/strapi/public ./public
 COPY --from=base --chown=node:node /app/strapi/database ./database
+COPY --from=base --chown=node:node /app/strapi/public ./public
+COPY --from=base --chown=node:node /app/strapi/favicon.png ./favicon.png
+COPY --from=base --chown=node:node /app/strapi/package.json ./package.json
 
-# Strapi needs to write to .cache/ and database/ at runtime
-RUN mkdir -p /app/strapi/.cache && chown -R node:node /app/strapi
+RUN mkdir -p /app/strapi/.cache /app/strapi/public/uploads \
+    && chown -R node:node /app/strapi/.cache /app/strapi/public/uploads
 
 USER node
-
 EXPOSE 1337
 
 ENTRYPOINT ["tini", "--"]

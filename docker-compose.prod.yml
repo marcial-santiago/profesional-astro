@@ -1,18 +1,17 @@
 # ── Production Docker Compose ──
-# Usage:
+# One-command deploy after creating .env:
 #   docker compose -f docker-compose.prod.yml up -d --build
+# Logs:
 #   docker compose -f docker-compose.prod.yml logs -f
-#   docker compose -f docker-compose.prod.yml down
 
 services:
-  # ── PostgreSQL ──
   postgres:
     image: postgres:15-alpine
     container_name: profesional-astro-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       POSTGRES_DB: ${DB_NAME:-profesional_astro}
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -22,9 +21,9 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-profesional_astro}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 10s
 
-  # ── Strapi CMS ──
   strapi:
     build:
       context: .
@@ -33,22 +32,37 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-profesional_astro}?schema=public
-      DATABASE_CLIENT: pg
-      # Disable SSL for internal Docker network
-      DATABASE_SSL: "false"
       NODE_ENV: production
       HOST: 0.0.0.0
       PORT: 1337
+      DATABASE_CLIENT: postgres
+      # Ignore any local-development DATABASE_URL loaded from .env.
+      # Docker should connect to the postgres service through the internal network.
+      DATABASE_URL: ""
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DB_NAME:-profesional_astro}
+      DATABASE_USERNAME: ${DB_USER:-postgres}
+      DATABASE_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      DATABASE_SSL: "false"
+      STRAPI_TELEMETRY_DISABLED: "true"
+    volumes:
+      - strapi_uploads:/app/strapi/public/uploads
     ports:
-      - "1337:1337"
+      # Exposed intentionally: Strapi admin works best at root (/admin), not behind /strapi.
+      - "${STRAPI_PORT:-1337}:1337"
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --tries=1 http://localhost:1337/admin/init -O /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 45s
 
-  # ── Astro SSR ──
   astro:
     build:
       context: .
@@ -57,38 +71,50 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      STRAPI_URL: http://strapi:1337
-      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-profesional_astro}?schema=public
       NODE_ENV: production
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost}
+      HOST: 0.0.0.0
+      PORT: 4321
+      ASTRO_TELEMETRY_DISABLED: "1"
+      STRAPI_URL: http://strapi:1337
+      PUBLIC_STRAPI_URL: ${PUBLIC_STRAPI_URL:-/strapi}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?ALLOWED_ORIGINS is required}
     depends_on:
-      - strapi
+      strapi:
+        condition: service_healthy
     networks:
       - app-network
     healthcheck:
       test: ["CMD-SHELL", "wget -q --tries=1 http://localhost:4321/ -O /dev/null || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 30s
+      retries: 12
+      start_period: 45s
 
-  # ── Nginx Reverse Proxy ──
   nginx:
     image: nginx:alpine
     container_name: profesional-astro-nginx
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "${HTTP_PORT:-80}:80"
     volumes:
       - ./nginx.prod.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - astro
-      - strapi
+      astro:
+        condition: service_healthy
+      strapi:
+        condition: service_healthy
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --tries=1 http://localhost/healthz -O /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
 volumes:
   pgdata:
+  strapi_uploads:
 
 networks:
   app-network:
