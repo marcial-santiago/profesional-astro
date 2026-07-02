@@ -2,6 +2,6 @@
 const { text, id } = Astro.props;
 ---
 
-<button id={id} class="rounded-2xl bg-black text-white py-5 px-10 text-2xl">
+<button id={id} class:list={['rounded-2xl bg-[var(--accent-600)] text-white py-5 px-10 text-2xl flex items-center justify-center', Astro.props.class]}>
   {text}
 </button>

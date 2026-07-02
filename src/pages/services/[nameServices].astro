@@ -26,7 +26,7 @@ const otherServices = SERVICE_DATA.services.filter(
 );
 ---
 
-<BaseLayout title={sectionTitle} description={sectionSubtitle}>
+<BaseLayout title={sectionTitle} description={sectionSubtitle} theme={nameServices}>
 
   <!-- Hero -->
   <section class="relative min-h-[70vh] flex items-end overflow-hidden">
@@ -77,12 +77,12 @@ const otherServices = SERVICE_DATA.services.filter(
   </section>
 
   <!-- Commitment strip -->
-  <section class="bg-sky-600 py-5 px-6">
+  <section class="bg-[var(--accent-600)] py-5 px-6">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-8 text-white text-sm font-medium">
       {[
         { icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`, label: "Licensed & Insured" },
-        { icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`, label: "Same-day response" },
-        { icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`, label: "Transparent pricing" },
+        { icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`, label: "Over 15 years experience" },
+        { icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`, label: "Free quotes" },
         { icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`, label: "Satisfaction guaranteed" },
       ].map((item) => (
         <div class="flex items-center gap-2">
@@ -97,7 +97,7 @@ const otherServices = SERVICE_DATA.services.filter(
   <section class="py-24 bg-white px-6">
     <div class="max-w-7xl mx-auto">
       <div class="text-center mb-14">
-        <p class="text-sky-600 font-semibold text-sm uppercase tracking-widest mb-2">{subTitle}</p>
+        <p class="text-[var(--accent-600)] font-semibold text-sm uppercase tracking-widest mb-2">{subTitle}</p>
         <h2 class="text-4xl font-bold text-slate-900 mb-4">{sectionTitle} — What We Offer</h2>
         <p class="text-slate-500 max-w-2xl mx-auto leading-relaxed">{subText}</p>
       </div>
@@ -114,7 +114,7 @@ const otherServices = SERVICE_DATA.services.filter(
               />
               <div class="absolute inset-0 bg-linear-to-t from-slate-900/60 to-transparent"></div>
               {item.price && (
-                <div class="absolute top-3 right-3 bg-sky-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                <div class="absolute top-3 right-3 bg-[var(--accent-500)] text-white text-xs font-bold px-3 py-1 rounded-full">
                   From ${item.price}
                 </div>
               )}
@@ -126,7 +126,7 @@ const otherServices = SERVICE_DATA.services.filter(
               <p class="text-slate-500 text-sm leading-relaxed mb-6">{item.description}</p>
               <a
                 href="#contact-form"
-                class="inline-flex items-center gap-2 w-full justify-center px-5 py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-sm rounded-xl transition-colors duration-200"
+                class="inline-flex items-center gap-2 w-full justify-center px-5 py-2.5 bg-[var(--accent-50)] hover:bg-[var(--accent-100)] text-[var(--accent-700)] font-semibold text-sm rounded-xl transition-colors duration-200"
               >
                 {item.cta}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -144,15 +144,15 @@ const otherServices = SERVICE_DATA.services.filter(
   <section class="py-20 bg-slate-50 px-6">
     <div class="max-w-7xl mx-auto">
       <div class="text-center mb-12">
-        <p class="text-sky-600 font-semibold text-sm uppercase tracking-widest mb-2">Our Process</p>
+        <p class="text-[var(--accent-600)] font-semibold text-sm uppercase tracking-widest mb-2">Our Process</p>
         <h2 class="text-3xl font-bold text-slate-900">How it works</h2>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {[
-          { step: "01", title: "Contact Us", desc: "Fill in the form or call us directly. We respond within hours." },
-          { step: "02", title: "Free Quote", desc: "We assess your needs and send you a transparent, no-obligation quote." },
-          { step: "03", title: "Schedule", desc: "Pick a date and time that works for you — 7 days a week." },
-          { step: "04", title: "Done Right", desc: "Our certified team completes the job to the highest standard." },
+          { step: "01", title: "Get in Touch", desc: "Call us or fill in the form. We respond within hours, 7 days a week." },
+          { step: "02", title: "Free Quote", desc: "We assess your needs and provide a clear, no-obligation quote." },
+          { step: "03", title: "We Schedule", desc: "Pick a date and time that suits you — we work around your calendar." },
+          { step: "04", title: "Job Done", desc: "We complete the work to the highest standard, guaranteed." },
         ].map((s) => (
           <div class="relative flex flex-col items-start">
             <span class="text-6xl font-bold text-slate-100 select-none mb-3">{s.step}</span>
@@ -173,7 +173,7 @@ const otherServices = SERVICE_DATA.services.filter(
           {otherServices.map((s) => (
             <a
               href={`/services/${s.nameUrl}`}
-              class="group flex items-center gap-5 bg-slate-50 border border-slate-200 rounded-2xl p-5 hover:border-sky-300 hover:bg-sky-50 transition-all duration-200"
+              class="group flex items-center gap-5 bg-slate-50 border border-slate-200 rounded-2xl p-5 hover:border-[var(--accent-300)] hover:bg-[var(--accent-50)] transition-all duration-200"
             >
               <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0">
                 <img src={s.urlImage} alt={s.sectionTitle} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -182,7 +182,7 @@ const otherServices = SERVICE_DATA.services.filter(
                 <h3 class="font-bold text-slate-900 mb-0.5">{s.sectionTitle}</h3>
                 <p class="text-slate-500 text-sm truncate">{s.sectionSubtitle}</p>
               </div>
-              <svg class="text-slate-400 group-hover:text-sky-500 transition-colors shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg class="text-slate-400 group-hover:text-[var(--accent-500)] transition-colors shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
               </svg>
             </a>

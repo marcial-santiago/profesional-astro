@@ -1,5 +1,53 @@
 @import "tailwindcss";
 
+:root {
+  --accent-50: #f0f9ff;
+  --accent-100: #e0f2fe;
+  --accent-300: #7dd3fc;
+  --accent-400: #38bdf8;
+  --accent-500: #0ea5e9;
+  --accent-600: #0284c7;
+  --accent-700: #0369a1;
+  --accent-800: #075985;
+  --accent-900: #0c4a6e;
+}
+
+[data-theme="gardening"] {
+  --accent-50: #f0fdf4;
+  --accent-100: #dcfce7;
+  --accent-300: #86efac;
+  --accent-400: #4ade80;
+  --accent-500: #22c55e;
+  --accent-600: #16a34a;
+  --accent-700: #15803d;
+  --accent-800: #166534;
+  --accent-900: #14532d;
+}
+
+[data-theme="concreting"] {
+  --accent-50: #fff7ed;
+  --accent-100: #ffedd5;
+  --accent-300: #fdba74;
+  --accent-400: #fb923c;
+  --accent-500: #f97316;
+  --accent-600: #ea580c;
+  --accent-700: #c2410c;
+  --accent-800: #9a3412;
+  --accent-900: #7c2d12;
+}
+
+[data-theme="removalist"] {
+  --accent-50: #faf5ff;
+  --accent-100: #f3e8ff;
+  --accent-300: #d8b4fe;
+  --accent-400: #c084fc;
+  --accent-500: #a855f7;
+  --accent-600: #9333ea;
+  --accent-700: #7e22ce;
+  --accent-800: #6b21a8;
+  --accent-900: #581c87;
+}
+
 html {
   scroll-behavior: smooth;
 }

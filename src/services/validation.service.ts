@@ -37,7 +37,7 @@ export const schemas = {
 
   workTypeId: z.number().int().positive(),
 
-  servicio: z.enum(["reparacion", "instalacion", "mantenimiento"]),
+  servicio: z.enum(["cleaning", "gardening", "concreting", "removalist", "other"]),
 };
 
 // Visit creation schema
