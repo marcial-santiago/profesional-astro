@@ -1,0 +1,8 @@
+<svg width="260" height="72" viewBox="0 0 260 72" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Roldans">
+  <rect width="260" height="72" rx="18" fill="#0F172A"/>
+  <rect x="14" y="14" width="44" height="44" rx="12" fill="#0EA5E9"/>
+  <path d="M24 34.5L36 25L48 34.5V48C48 49.1046 47.1046 50 46 50H26C24.8954 50 24 49.1046 24 48V34.5Z" stroke="white" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M32 50V39H40V50" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="72" y="35" fill="white" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="800" letter-spacing="-0.7">Roldans</text>
+  <text x="73" y="53" fill="#BAE6FD" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="600" letter-spacing="0.8">CONTENT STUDIO</text>
+</svg>

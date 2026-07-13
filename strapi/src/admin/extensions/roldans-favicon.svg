@@ -1,0 +1,6 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Roldans">
+  <rect width="64" height="64" rx="16" fill="#0F172A"/>
+  <rect x="10" y="10" width="44" height="44" rx="12" fill="#0EA5E9"/>
+  <path d="M20 30.5L32 21L44 30.5V45C44 46.1046 43.1046 47 42 47H22C20.8954 47 20 46.1046 20 45V30.5Z" stroke="white" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="M28 47V36H36V47" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

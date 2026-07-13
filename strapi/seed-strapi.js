@@ -2,10 +2,22 @@ require('dotenv').config();
 const { Client } = require('pg');
 const { randomUUID } = require('crypto');
 
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
+const useConnectionString = !!process.env.DATABASE_URL;
+const useSsl = (process.env.DATABASE_SSL || 'false').toLowerCase() === 'true';
+
+const client = useConnectionString
+  ? new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: useSsl ? { rejectUnauthorized: false } : false,
+    })
+  : new Client({
+      host: process.env.DATABASE_HOST || 'postgres',
+      port: Number(process.env.DATABASE_PORT || 5432),
+      database: process.env.DATABASE_NAME || 'profesional_astro',
+      user: process.env.DATABASE_USERNAME || process.env.DB_USER || 'postgres',
+      password: process.env.DATABASE_PASSWORD || process.env.DB_PASSWORD,
+      ssl: useSsl ? { rejectUnauthorized: false } : false,
+    });
 
 async function seed() {
   try {
@@ -170,20 +182,9 @@ async function seed() {
           ]
         );
 
-        // Strapi v5 relations
-        const linksCheck = await client.query(
-          "SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%visit%work%' OR table_name LIKE '%work%visit%'"
-        );
-        
-        if (linksCheck.rows.length > 0) {
-          const linkTable = linksCheck.rows[0].table_name;
-          await client.query(
-            `INSERT INTO ${linkTable} (visit_id, work_type_id) VALUES ($1, $2)`,
-            [visitDocId, workTypeId]
-          );
-        }
-        
-        console.log('   ✅ 1 Visit inserted\n');
+        // Strapi relation link table varies by setup; skip relation insert in seed script
+        console.log('   ⚠️  Visit created without work-type relation link (non-blocking)');
+
       } else {
         console.log('   ⚠️  No work type found, skipping visit\n');
       }

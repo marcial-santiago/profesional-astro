@@ -2,14 +2,17 @@
 export const prerender = false;
 
 import BaseLayout from "../../layouts/BaseLayaout.astro";
-import { STRAPI_URL, strapiImage } from "../../config";
+import { STRAPI_URL, normalizeStrapiMedia, strapiQuery } from "../../config";
 import Button from "../../components/Button/index.astro";
 import PrincipalForm from "../../components/PrincipalForm/index.astro";
 
 const { slug } = Astro.params;
 
 interface WorkTypeImage {
-  url: string;
+  url?: string | null;
+  alternativeText?: string | null;
+  width?: number | null;
+  height?: number | null;
 }
 
 interface StrapiWorkType {
@@ -25,7 +28,15 @@ interface StrapiWorkType {
 }
 
 // Fetch single service by slug
-const serviceRes = await fetch(`${STRAPI_URL}/api/work-types?filters[slug][$eq]=${slug}&filters[isActive][$eq]=true&populate=image`);
+const serviceQuery = strapiQuery({
+  "filters[slug][$eq]": slug || "",
+  "filters[isActive][$eq]": true,
+  "populate[image][fields][0]": "url",
+  "populate[image][fields][1]": "alternativeText",
+  "populate[image][fields][2]": "width",
+  "populate[image][fields][3]": "height",
+});
+const serviceRes = await fetch(`${STRAPI_URL}/api/work-types?${serviceQuery}`);
 const serviceData = await serviceRes.json();
 const strapiService: StrapiWorkType | undefined = serviceData.data?.[0];
 
@@ -34,6 +45,7 @@ if (!strapiService) {
 }
 
 // Transform to match existing format
+const serviceMedia = normalizeStrapiMedia(strapiService.image, strapiService.name);
 const service = {
   id: strapiService.id,
   name: strapiService.name,
@@ -43,25 +55,37 @@ const service = {
   duration: strapiService.duration,
   price: strapiService.price,
   isActive: strapiService.isActive,
-  image: strapiService.image ? { path: strapiImage(strapiService.image.url) } : null,
+  image: serviceMedia ? { path: serviceMedia.url } : null,
 };
 
 // Get other services for "Other Services" section
-const otherRes = await fetch(`${STRAPI_URL}/api/work-types?filters[slug][$ne]=${slug}&filters[isActive][$eq]=true&populate=image&pagination[limit]=3`);
+const otherQuery = strapiQuery({
+  "filters[slug][$ne]": slug || "",
+  "filters[isActive][$eq]": true,
+  "populate[image][fields][0]": "url",
+  "populate[image][fields][1]": "alternativeText",
+  "populate[image][fields][2]": "width",
+  "populate[image][fields][3]": "height",
+  "pagination[limit]": 3,
+});
+const otherRes = await fetch(`${STRAPI_URL}/api/work-types?${otherQuery}`);
 const otherData = await otherRes.json();
 const strapiOthers: StrapiWorkType[] = otherData.data || [];
 
-const otherServices = strapiOthers.map((wt) => ({
-  id: wt.id,
-  name: wt.name,
-  slug: wt.slug,
-  description: wt.description,
-  category: wt.category,
-  duration: wt.duration,
-  price: wt.price,
-  isActive: wt.isActive,
-  image: wt.image ? { path: strapiImage(wt.image.url) } : null,
-}));
+const otherServices = strapiOthers.map((wt) => {
+  const media = normalizeStrapiMedia(wt.image, wt.name);
+  return {
+    id: wt.id,
+    name: wt.name,
+    slug: wt.slug,
+    description: wt.description,
+    category: wt.category,
+    duration: wt.duration,
+    price: wt.price,
+    isActive: wt.isActive,
+    image: media ? { path: media.url } : null,
+  };
+});
 
 type WorkType = typeof otherServices[number];
 ---

@@ -166,20 +166,17 @@ import Button from "../Button/index.astro";
     }
 
     const formData = new FormData(form);
-    const STRAPI_URL = (import.meta as any).env?.STRAPI_URL || 'http://localhost:1337';
 
     try {
       submitBtn.disabled = true;
-      const res = await fetch(`${STRAPI_URL}/api/messages`, {
+      const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          data: {
-            nombre: formData.get("nombre"),
-            telefono: formData.get("telefono"),
-            servicio: formData.get("servicio"),
-            mensaje: formData.get("mensaje"),
-          },
+          nombre: formData.get("nombre"),
+          telefono: formData.get("telefono"),
+          servicio: formData.get("servicio"),
+          mensaje: formData.get("mensaje"),
         }),
       });
       const result = await res.json();

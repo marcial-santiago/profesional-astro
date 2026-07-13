@@ -137,7 +137,7 @@ profesional-astro/
 │   │       ├── visits.ts         # POST — Create booking
 │   │       ├── contact.ts        # POST — Contact form
 │   │       ├── csrf.ts           # GET — CSRF token
-│   │       ├── verify-payment.ts # POST — Payment verification
+│   │       ├── verify-payment.ts # GET — Payment verification fallback
 │   │       ├── admin/
 │   │       │   ├── login.ts      # POST — Admin auth
 │   │       │   ├── logout.ts     # POST — Clear session
@@ -198,7 +198,7 @@ profesional-astro/
 2. VisitScheduler shows available slots (checks `Availability`, `BlockedDate`, existing `Visit` conflicts)
 3. User selects date/time → redirected to `/checkout`
 4. Two options:
-   - **Pay with Stripe** → creates checkout session with DB price → webhook creates `Visit` on payment
+   - **Pay with Stripe** → creates idempotent checkout session with DB price/name → webhook creates `Visit` on payment
    - **Confirm without payment** → POST to `/api/visits` → creates `Visit` directly
 
 ### Security Layers
@@ -256,6 +256,63 @@ Covers: CSRF tokens, rate limiter, IP utils, session management, validation sche
 
 ---
 
+
+## Production Docker
+
+The production stack is designed to run with one command on a server. It starts:
+
+- PostgreSQL 15
+- Strapi CMS
+- Astro SSR frontend
+- Nginx reverse proxy
+
+### First deploy
+
+```bash
+cp .env.prod.example .env
+# Fill every CHANGE_ME value before starting.
+nano .env
+
+./scripts/prod-up.sh
+```
+
+Equivalent raw Docker command:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+### URLs after startup
+
+- Frontend: `http://SERVER_IP/`
+- Strapi admin: `http://SERVER_IP:1337/admin`
+- Same-origin Strapi API proxy: `http://SERVER_IP/strapi/api/...`
+
+Strapi admin is intentionally exposed on port `1337` because the admin panel serves assets from root paths. Nginx still proxies `/strapi/` for API/uploads when same-origin access is useful.
+
+### Useful operations
+
+```bash
+# Follow all logs
+docker compose -f docker-compose.prod.yml logs -f
+
+# Restart after editing .env
+docker compose -f docker-compose.prod.yml up -d --build
+
+# Stop containers without deleting data
+docker compose -f docker-compose.prod.yml down
+
+# Stop and delete persistent database/uploads volumes — destructive
+docker compose -f docker-compose.prod.yml down -v
+```
+
+Persistent data lives in Docker volumes:
+
+- `pgdata` — PostgreSQL database
+- `strapi_uploads` — uploaded media files
+
+---
+
 ## Deployment
 
 ### Vercel (Recommended)
@@ -275,7 +332,9 @@ Covers: CSRF tokens, rate limiter, IP utils, session management, validation sche
 
 1. Go to **Stripe Dashboard → Developers → Webhooks**
 2. Add endpoint: `https://your-domain.com/api/stripe/webhook`
-3. Select event: `checkout.session.completed`
+3. Select events:
+   - `checkout.session.completed`
+   - `checkout.session.async_payment_succeeded`
 4. Copy the signing secret → set as `STRIPE_WEBHOOK_SECRET`
 
 For local development:

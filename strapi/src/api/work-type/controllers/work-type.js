@@ -7,6 +7,7 @@ module.exports = createCoreController('api::work-type.work-type', ({ strapi }) =
     try {
       const { date, workTypeId } = ctx.query;
       if (!date || !workTypeId) return ctx.badRequest('Date and workTypeId are required');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return ctx.badRequest('Invalid date');
       
       const workTypeIdNum = parseInt(workTypeId, 10);
       if (isNaN(workTypeIdNum)) return ctx.badRequest('Invalid workTypeId');
@@ -14,6 +15,18 @@ module.exports = createCoreController('api::work-type.work-type', ({ strapi }) =
       // 1. Parse date
       const [year, month, day] = date.split('-').map(Number);
       const queryDate = new Date(year, month - 1, day);
+      if (
+        queryDate.getFullYear() !== year ||
+        queryDate.getMonth() !== month - 1 ||
+        queryDate.getDate() !== day
+      ) {
+        return ctx.badRequest('Invalid date');
+      }
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (queryDate < today) {
+        return ctx.send({ data: [] });
+      }
       const dayOfWeek = queryDate.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
 
       const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
@@ -21,7 +34,7 @@ module.exports = createCoreController('api::work-type.work-type', ({ strapi }) =
       
       // 2. Check blocked date
       const blockedDates = await strapi.db.query('api::blocked-date.blocked-date').findMany({
-        where: { date: { $gte: startOfDay, $lte: endOfDay } },
+        where: { date },
         limit: 1,
       });
       

@@ -1,0 +1,43 @@
+# ── Strapi 5 Dockerfile ──
+FROM node:20-alpine AS base
+WORKDIR /app/strapi
+
+ENV STRAPI_TELEMETRY_DISABLED=true
+
+# Native deps needed by sharp/better-sqlite3 on Alpine and health checks at runtime.
+RUN apk add --no-cache python3 make g++ vips-dev
+
+COPY strapi/package.json strapi/package-lock.json ./
+RUN npm ci
+
+COPY strapi/ ./
+RUN mkdir -p public/uploads && npm run build && npm prune --omit=dev
+
+# ── Production stage ──
+FROM node:20-alpine
+WORKDIR /app/strapi
+
+ENV NODE_ENV=production \
+    HOST=0.0.0.0 \
+    PORT=1337 \
+    STRAPI_TELEMETRY_DISABLED=true
+
+RUN apk add --no-cache tini wget vips
+
+COPY --from=base --chown=node:node /app/strapi/node_modules ./node_modules
+COPY --from=base --chown=node:node /app/strapi/build ./build
+COPY --from=base --chown=node:node /app/strapi/src ./src
+COPY --from=base --chown=node:node /app/strapi/config ./config
+COPY --from=base --chown=node:node /app/strapi/database ./database
+COPY --from=base --chown=node:node /app/strapi/public ./public
+COPY --from=base --chown=node:node /app/strapi/favicon.png ./favicon.png
+COPY --from=base --chown=node:node /app/strapi/package.json ./package.json
+
+RUN mkdir -p /app/strapi/.cache /app/strapi/public/uploads \
+    && chown -R node:node /app/strapi/.cache /app/strapi/public/uploads
+
+USER node
+EXPOSE 1337
+
+ENTRYPOINT ["tini", "--"]
+CMD ["npm", "run", "start"]

@@ -1,0 +1,39 @@
+# ── Astro SSR Dockerfile ──
+FROM node:20-alpine AS base
+WORKDIR /app
+
+ENV ASTRO_TELEMETRY_DISABLED=1
+
+# Install pnpm globally
+RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
+
+# Install dependencies
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile --prod=false
+
+# Build Astro. Runtime secrets are injected by docker compose; build must not depend
+# on a local .env file because .env is intentionally excluded from the image.
+COPY . .
+RUN pnpm build
+
+# ── Production stage ──
+FROM node:20-alpine
+WORKDIR /app
+
+ENV NODE_ENV=production \
+    HOST=0.0.0.0 \
+    PORT=4321 \
+    ASTRO_TELEMETRY_DISABLED=1
+
+RUN apk add --no-cache tini wget
+
+# Copy built standalone server and runtime dependencies.
+COPY --from=base --chown=node:node /app/node_modules ./node_modules
+COPY --from=base --chown=node:node /app/dist ./dist
+COPY --from=base --chown=node:node /app/package.json ./package.json
+
+USER node
+EXPOSE 4321
+
+ENTRYPOINT ["tini", "--"]
+CMD ["node", "dist/server/entry.mjs"]

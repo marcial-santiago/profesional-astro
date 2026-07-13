@@ -2,6 +2,7 @@
 export const prerender = false;
 import BaseLayaout from "../../layouts/BaseLayaout.astro";
 import { stripe } from "../../lib/stripe";
+import { verifyPaidCheckoutSession } from "../../lib/payment-verification";
 
 // Get session_id from URL
 const sessionId = Astro.url.searchParams.get("session_id");
@@ -18,12 +19,7 @@ if (sessionId && sessionId.startsWith("cs_")) {
     // Try to verify payment and create visit
     if (session.payment_status === "paid") {
       try {
-        const response = await fetch(`${Astro.url.origin}/api/verify-payment?session_id=${sessionId}`);
-        if (response.ok) {
-          visitData = await response.json();
-        } else {
-          error = "Could not verify payment";
-        }
+        visitData = await verifyPaidCheckoutSession(sessionId);
       } catch (err) {
         console.error("Error verifying payment:", err);
         error = "Verification error";
