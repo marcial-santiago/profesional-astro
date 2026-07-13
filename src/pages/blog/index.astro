@@ -1,15 +1,24 @@
 ---
 import { Image } from 'astro:assets';
-import { getCollection } from 'astro:content';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
 import Header from '../../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
+import { STRAPI_URL } from '../../config';
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-);
+interface StrapiBlogPost {
+  id: number;
+  title: string;
+  slug: string;
+  description: string;
+  pubDate: string;
+  heroImage: { url: string } | null;
+}
+
+const res = await fetch(`${STRAPI_URL}/api/blog-posts?populate=heroImage&sort[0]=pubDate:desc`);
+const data = await res.json();
+const posts: StrapiBlogPost[] = data.data || [];
 ---
 
 <!doctype html>
@@ -94,13 +103,13 @@ const posts = (await getCollection('blog')).sort(
 					{
 						posts.map((post) => (
 							<li>
-								<a href={`/blog/${post.id}/`}>
-									{post.data.heroImage && (
-										<Image width={720} height={360} src={post.data.heroImage} alt="" />
+								<a href={`/blog/${post.slug}/`}>
+									{post.heroImage && (
+										<Image width={720} height={360} src={post.heroImage.url} alt="" />
 									)}
-									<h4 class="title">{post.data.title}</h4>
+									<h4 class="title">{post.title}</h4>
 									<p class="date">
-										<FormattedDate date={post.data.pubDate} />
+										<FormattedDate date={new Date(post.pubDate)} />
 									</p>
 								</a>
 							</li>

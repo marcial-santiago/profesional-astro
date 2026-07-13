@@ -1,0 +1,51 @@
+{
+  "kind": "collectionType",
+  "collectionName": "visits",
+  "info": {
+    "singularName": "visit",
+    "pluralName": "visits",
+    "displayName": "Visit",
+    "description": "Scheduled visits/appointments booked by clients"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true
+    },
+    "telefono": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "email"
+    },
+    "date": {
+      "type": "datetime",
+      "required": true
+    },
+    "workType": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::work-type.work-type"
+    },
+    "mensaje": {
+      "type": "text"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "confirmed", "cancelled"],
+      "required": true,
+      "default": "pending"
+    },
+    "stripeSessionId": {
+      "type": "string",
+      "unique": true
+    },
+    "stripeEventId": {
+      "type": "string"
+    }
+  }
+}

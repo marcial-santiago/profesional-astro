@@ -1,0 +1,56 @@
+{
+  "kind": "collectionType",
+  "collectionName": "work_types",
+  "info": {
+    "singularName": "work-type",
+    "pluralName": "work-types",
+    "displayName": "Work Type",
+    "description": "Types of work/services offered (cleaning, plumbing, construction)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true
+    },
+    "description": {
+      "type": "richtext"
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": ["cleaning", "plumbing", "construction"],
+      "required": true,
+      "default": "cleaning"
+    },
+    "duration": {
+      "type": "integer",
+      "required": true,
+      "default": 60,
+      "min": 15
+    },
+    "price": {
+      "type": "decimal",
+      "required": true,
+      "default": 10,
+      "min": 0
+    },
+    "isActive": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    }
+  }
+}

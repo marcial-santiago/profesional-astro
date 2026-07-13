@@ -1,0 +1,127 @@
+---
+export const prerender = false;
+
+import BaseLayout from "../../layouts/BaseLayaout.astro";
+import { STRAPI_URL, strapiImage } from "../../config";
+
+interface WorkTypeImage {
+  url: string;
+}
+
+interface StrapiWorkType {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  category: string;
+  duration: number;
+  price: number;
+  isActive: boolean;
+  image: WorkTypeImage | null;
+}
+
+const res = await fetch(`${STRAPI_URL}/api/work-types?populate=image&filters[isActive][$eq]=true&sort[0]=category:asc&sort[1]=name:asc`);
+const strapiData = await res.json();
+const strapiWorkTypes: StrapiWorkType[] = strapiData.data || [];
+
+// Transform Strapi response to match existing format
+const workTypes = strapiWorkTypes.map((wt) => ({
+  id: wt.id,
+  name: wt.name,
+  slug: wt.slug,
+  description: wt.description,
+  category: wt.category,
+  duration: wt.duration,
+  price: wt.price,
+  isActive: wt.isActive,
+  image: wt.image ? { path: strapiImage(wt.image.url) } : null,
+}));
+
+// Group by category
+type WorkType = typeof workTypes[number];
+const grouped = workTypes.reduce((acc: Record<string, WorkType[]>, wt: WorkType) => {
+  if (!acc[wt.category]) acc[wt.category] = [];
+  acc[wt.category].push(wt);
+  return acc;
+}, {} as Record<string, WorkType[]>);
+
+const categoryLabels: Record<string, string> = {
+  cleaning: "Cleaning Services",
+  plumbing: "Plumbing Services",
+  construction: "Construction Services",
+};
+---
+
+<BaseLayout title="Our Services" description="Professional cleaning, plumbing, and construction services">
+
+  <!-- Hero -->
+  <section class="bg-slate-900 py-20 px-6">
+    <div class="max-w-7xl mx-auto text-center">
+      <p class="text-sky-400 font-semibold text-sm uppercase tracking-widest mb-3">What We Offer</p>
+      <h1 class="text-4xl md:text-5xl font-bold text-white leading-tight mb-4">Our Services</h1>
+      <p class="text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
+        Professional solutions for homes and businesses. Quality work, transparent pricing, guaranteed satisfaction.
+      </p>
+    </div>
+  </section>
+
+  <!-- Services by category -->
+  {(Object.entries(grouped) as [string, WorkType[]][]).map(([category, services]) => (
+    <section class="py-16 px-6 bg-white">
+      <div class="max-w-7xl mx-auto">
+        <h2 class="text-3xl font-bold text-slate-900 mb-2">{categoryLabels[category] || category}</h2>
+        <div class="w-16 h-1 bg-sky-500 rounded mb-10"></div>
+
+        <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {services.map((item: WorkType) => (
+            <article class="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <!-- Image -->
+              <div class="relative h-52 overflow-hidden bg-slate-100">
+                {item.image?.path ? (
+                  <img
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    src={item.image.path}
+                    alt={item.name}
+                  />
+                ) : (
+                  <div class="w-full h-full flex items-center justify-center bg-slate-200 text-slate-400">
+                    <span class="text-4xl">🔧</span>
+                  </div>
+                )}
+                <div class="absolute inset-0 bg-linear-to-t from-slate-900/60 to-transparent"></div>
+                <div class="absolute top-3 right-3 bg-sky-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  From ${item.price}
+                </div>
+              </div>
+
+              <!-- Content -->
+              <div class="p-6">
+                <h3 class="text-lg font-bold text-slate-900 mb-2">{item.name}</h3>
+                {item.description && (
+                  <p class="text-slate-500 text-sm leading-relaxed mb-4">{item.description}</p>
+                )}
+                <p class="text-xs text-slate-400 mb-4">⏱️ {item.duration} min</p>
+                <a
+                  href={`/services/${item.slug}`}
+                  class="inline-flex items-center gap-2 w-full justify-center px-5 py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-sm rounded-xl transition-colors duration-200"
+                >
+                  View Details
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  ))}
+
+  {Object.keys(grouped).length === 0 && (
+    <section class="py-20 px-6 text-center">
+      <p class="text-xl text-slate-400">No services available yet.</p>
+    </section>
+  )}
+
+</BaseLayout>

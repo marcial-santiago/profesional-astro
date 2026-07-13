@@ -72,6 +72,7 @@ const { class: className } = Astro.props;
       >
         <h3 id="step-1-title" class="text-lg font-semibold mb-4 text-slate-800">
           What service do you need?
+          What service do you need?
         </h3>
 
         <div
@@ -96,7 +97,9 @@ const { class: className } = Astro.props;
             class="bg-[var(--accent-600)] text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-[var(--accent-700)] transition disabled:opacity-40 disabled:cursor-not-allowed"
             disabled
             aria-label="Continue to next step"
+            aria-label="Continue to next step"
           >
+            Continue →
             Continue →
           </button>
         </div>
@@ -118,7 +121,7 @@ const { class: className } = Astro.props;
             id="calendar-container"
             class="border border-slate-200 rounded-xl p-4 bg-slate-50"
             role="application"
-            aria-label="Calendario"
+            aria-label="Calendar"
           >
             <!-- Calendar will be rendered here -->
           </div>
@@ -126,6 +129,7 @@ const { class: className } = Astro.props;
           <!-- Time Slots -->
           <div class="border border-slate-200 rounded-xl p-4">
             <p class="text-sm font-medium mb-3 text-slate-700">
+              Available times
               Available times
             </p>
             <div
@@ -135,6 +139,7 @@ const { class: className } = Astro.props;
             >
               <div class="col-span-3 text-center py-8">
                 <span class="text-3xl">📅</span>
+                <p class="text-sm text-slate-400 mt-2">Select a date</p>
                 <p class="text-sm text-slate-400 mt-2">Select a date</p>
               </div>
             </div>
@@ -156,7 +161,9 @@ const { class: className } = Astro.props;
             class="bg-[var(--accent-600)] text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-[var(--accent-700)] transition disabled:opacity-40 disabled:cursor-not-allowed"
             disabled
             aria-label="Continue"
+            aria-label="Continue"
           >
+            Continue →
             Continue →
           </button>
         </div>
@@ -173,12 +180,24 @@ const { class: className } = Astro.props;
         </h3>
 
         <form id="booking-form" class="space-y-4" novalidate>
+          <!-- Honeypot — hidden field to catch bots -->
+          <input
+            type="text"
+            name="company"
+            tabindex="-1"
+            autocomplete="off"
+            class="hidden"
+            style="position:absolute;left:-9999px;opacity:0;height:0;width:0;overflow:hidden;"
+            aria-hidden="true"
+          />
+
           <div class="grid md:grid-cols-2 gap-4">
             <div>
               <label
                 for="nombre"
                 class="block text-sm font-medium text-slate-700 mb-1"
               >
+                Full Name <span class="text-red-500">*</span>
                 Full Name <span class="text-red-500">*</span>
               </label>
               <input
@@ -202,6 +221,7 @@ const { class: className } = Astro.props;
                 class="block text-sm font-medium text-slate-700 mb-1"
               >
                 Phone <span class="text-red-500">*</span>
+                Phone <span class="text-red-500">*</span>
               </label>
               <input
                 type="tel"
@@ -216,6 +236,22 @@ const { class: className } = Astro.props;
               <span class="error-message hidden text-xs text-red-500 mt-1"
               ></span>
             </div>
+          </div>
+
+          <div>
+            <label
+              for="email"
+              class="block text-sm font-medium text-slate-700 mb-1"
+            >
+              Email <span class="text-slate-400">(optional)</span>
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
+              placeholder="your@email.com"
+            />
           </div>
 
           <div>
@@ -242,11 +278,15 @@ const { class: className } = Astro.props;
               class="text-sm font-bold text-[var(--accent-800)] mb-2 flex items-center gap-2"
             >
               <span>📋</span> Booking Summary
+              <span>📋</span> Booking Summary
             </h4>
             <ul id="summary-list" class="text-sm text-[var(--accent-700)] space-y-1">
               <!-- Summary will be populated here -->
             </ul>
           </div>
+
+          <!-- Error message -->
+          <div id="booking-error" class="hidden text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3"></div>
 
           <div class="flex justify-between items-center pt-2">
             <button
@@ -254,7 +294,9 @@ const { class: className } = Astro.props;
               id="back-3"
               class="text-slate-500 hover:text-slate-800 transition text-sm"
               aria-label="Go back"
+              aria-label="Go back"
             >
+              ← Back
               ← Back
             </button>
             <button
@@ -353,6 +395,7 @@ const { class: className } = Astro.props;
   // Helper to get service icon
   function getServiceIcon(name: string): string {
     return SERVICE_ICONS[name] || "📋";
+    return SERVICE_ICONS[name] || "📋";
   }
 
   // State Management
@@ -403,6 +446,12 @@ const { class: className } = Astro.props;
 
   // Utils
   const utils = {
+    /** Read CSRF token from cookie */
+    getCsrfToken(): string | null {
+      const match = document.cookie.match(/csrf_token=([^;]+)/);
+      return match ? match[1] : null;
+    },
+
     formatDate(dateStr: string): string {
       const date = new Date(dateStr);
       const options: Intl.DateTimeFormatOptions = {
@@ -410,6 +459,7 @@ const { class: className } = Astro.props;
         day: "numeric",
         month: "long",
       };
+      return date.toLocaleDateString("en-AU", options);
       return date.toLocaleDateString("en-AU", options);
     },
 
@@ -622,6 +672,7 @@ const { class: className } = Astro.props;
       div.innerHTML = `
         <span class="text-2xl">😔</span>
         <p class="text-sm text-slate-400 mt-2">No available times</p>
+        <p class="text-sm text-slate-400 mt-2">No available times</p>
       `;
       return div;
     },
@@ -633,36 +684,70 @@ const { class: className } = Astro.props;
     },
   };
 
-  // API Service
+  // API Service — uses Astro proxy endpoints (never calls Strapi directly from browser)
   const api = {
     async fetchWorkTypes(): Promise<WorkType[]> {
       const response = await fetch("/api/work-types");
-      if (!response.ok) throw new Error("Failed to fetch work types");
-      return response.json();
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[VisitScheduler] Fetch failed:', response.status, errorText);
+        throw new Error(`Failed to fetch services: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('[VisitScheduler] Received work types:', data.data?.length || 0);
+      
+      return (data.data || []).map((wt: { id: number; name: string; description?: string; duration?: number; price?: number }) => ({
+        id: wt.id,
+        name: wt.name,
+        description: wt.description,
+        duration: wt.duration,
+        price: wt.price ?? 10,
+      }));
     },
 
     async fetchSlots(date: string, workTypeId: number): Promise<string[]> {
       const response = await fetch(
-        `/api/slots?date=${date}&workTypeId=${workTypeId}`,
+        `/api/work-types/slots?date=${date}&workTypeId=${workTypeId}`,
       );
-      if (!response.ok) throw new Error("Failed to fetch slots");
-      return response.json();
+      if (!response.ok) throw new Error("Failed to fetch available times");
+      const data = await response.json();
+      return data.data || [];
     },
 
     async createVisit(data: {
       nombre: string;
       telefono: string;
+      email?: string;
       mensaje: string;
       date: string;
       time: string;
       workTypeId: number;
+      company?: string;
     }): Promise<void> {
+      const csrfToken = utils.getCsrfToken();
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (csrfToken) headers["x-csrf-token"] = csrfToken;
+
       const response = await fetch("/api/visits", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        headers,
+        body: JSON.stringify({
+          nombre: data.nombre,
+          telefono: data.telefono,
+          email: data.email || "",
+          mensaje: data.mensaje || "",
+          date: data.date,
+          time: data.time,
+          workTypeId: data.workTypeId,
+          ...(data.company && { company: data.company }),
+        }),
       });
-      if (!response.ok) throw new Error("Failed to create visit");
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to book appointment");
+      }
     },
   };
 
@@ -711,6 +796,7 @@ const { class: className } = Astro.props;
           workTypeId: selectedWorkType.id,
           workTypeName: selectedWorkType.name,
           workTypeDuration: selectedWorkType.duration,
+          price: (selectedWorkType as any).price ?? 10,
           date: selectedDate,
           time: selectedTime,
         }));
@@ -721,6 +807,11 @@ const { class: className } = Astro.props;
       document
         .getElementById("reset-scheduler")
         ?.addEventListener("click", () => this.reset());
+
+      // Booking form submit
+      document
+        .getElementById("booking-form")
+        ?.addEventListener("submit", (e) => this.handleSubmit(e));
     }
 
     private renderWorkTypes(): void {
@@ -737,6 +828,7 @@ const { class: className } = Astro.props;
           "text-slate-500",
           "py-8",
         ]);
+        message.textContent = "No services available.";
         message.textContent = "No services available.";
         grid.appendChild(message);
         return;
@@ -799,6 +891,18 @@ const { class: className } = Astro.props;
         "October",
         "November",
         "December",
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
       ];
 
       // Header
@@ -823,6 +927,7 @@ const { class: className } = Astro.props;
         "text-slate-400",
         "mb-2",
       ]);
+      ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].forEach((day) => {
       ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].forEach((day) => {
         const dayDiv = utils.createElement("div");
         dayDiv.textContent = day;
@@ -896,13 +1001,14 @@ const { class: className } = Astro.props;
 
       utils.clearElement(slotsGrid);
       slotsGrid.appendChild(DOMFactory.createLoadingMessage("Loading..."));
+      slotsGrid.appendChild(DOMFactory.createLoadingMessage("Loading..."));
 
       try {
         const slots = await api.fetchSlots(date, selectedWorkType.id);
         this.state.setState({ availableSlots: slots });
         this.renderSlots(slots);
       } catch (error) {
-        console.error("Error fetching slots:", error);
+        console.error("Error fetching times:", error);
         utils.clearElement(slotsGrid);
         slotsGrid.appendChild(DOMFactory.createEmptyMessage());
       }
@@ -967,9 +1073,12 @@ const { class: className } = Astro.props;
         DOMFactory.createSummaryItem(
           "Service",
           selectedWorkType.name,
+          "Service",
+          selectedWorkType.name,
         ),
       );
       fragment.appendChild(
+        DOMFactory.createSummaryItem("Date", utils.formatDate(selectedDate)),
         DOMFactory.createSummaryItem("Date", utils.formatDate(selectedDate)),
       );
       fragment.appendChild(        DOMFactory.createSummaryItem("Time", selectedTime));
@@ -985,8 +1094,10 @@ const { class: className } = Astro.props;
       if (input.name === "nombre") {
         isValid = utils.validateName(input.value);
         errorMessage = "Invalid name (minimum 3 letters)";
+        errorMessage = "Invalid name (minimum 3 letters)";
       } else if (input.name === "telefono") {
         isValid = utils.validatePhone(input.value);
+        errorMessage = "Invalid phone number";
         errorMessage = "Invalid phone number";
       }
 
@@ -1009,8 +1120,19 @@ const { class: className } = Astro.props;
     private async handleSubmit(e: Event): Promise<void> {
       e.preventDefault();
 
+      // Clear previous errors
+      const errorEl = document.getElementById("booking-error");
+      errorEl?.classList.add("hidden");
+
       const form = e.target as HTMLFormElement;
       const formData = new FormData(form);
+
+      // Honeypot check — reject if bot filled the hidden field
+      const honeypot = formData.get("company") as string;
+      if (honeypot) {
+        console.warn("Bot detected — honeypot field filled");
+        return;
+      }
 
       const nameInput = form.querySelector(
         '[name="nombre"]',
@@ -1044,22 +1166,24 @@ const { class: className } = Astro.props;
         await api.createVisit({
           nombre: formData.get("nombre") as string,
           telefono: formData.get("telefono") as string,
+          email: (formData.get("email") as string) || undefined,
           mensaje: formData.get("mensaje") as string,
           date: selectedDate,
           time: selectedTime,
           workTypeId: selectedWorkType.id,
+          company: "",
         });
 
         this.goToStep("success");
       } catch (error) {
-        console.error("Error creating visit:", error);
+        console.error("Error booking appointment:", error);
 
         const errorMessage =
           error instanceof Error ? error.message : String(error);
         const isSlotTaken =
-          errorMessage.includes("horario ya está ocupado") ||
+          errorMessage.includes("already taken") ||
           errorMessage.includes("Slot already taken") ||
-          errorMessage.includes("Este horario ya está ocupado");
+          errorMessage.includes("time slot is not available");
 
         if (isSlotTaken) {
           alert(
@@ -1079,13 +1203,13 @@ const { class: className } = Astro.props;
               });
               this.renderSlots(slots);
             } catch (refreshError) {
-              console.error("Error refreshing slots:", refreshError);
+              console.error("Error refreshing times:", refreshError);
             }
           }
         } else {
           alert("Error booking. Please try again.");
           submitBtn.disabled = false;
-          submitBtn.textContent = originalText || "Agendar Turno";
+          submitBtn.textContent = originalText || "Book Appointment";
         }
       }
     }
@@ -1100,6 +1224,7 @@ const { class: className } = Astro.props;
       if (typeof step === "number") {
         this.state.setState({ currentStep: step });
         this.updateStepIndicators(step);
+        if (step === 3) this.updateSummary();
       }
     }
 
@@ -1147,6 +1272,13 @@ const { class: className } = Astro.props;
         </button>
       `;
       grid.appendChild(wrapper);
+    }
+
+    private showBookingError(message: string): void {
+      const errorEl = document.getElementById("booking-error");
+      if (!errorEl) return;
+      errorEl.textContent = message;
+      errorEl.classList.remove("hidden");
     }
 
     private reset(): void {

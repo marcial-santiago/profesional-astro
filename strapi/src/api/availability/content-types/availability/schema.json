@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "availabilities",
+  "info": {
+    "singularName": "availability",
+    "pluralName": "availabilities",
+    "displayName": "Availability",
+    "description": "Weekly recurring availability slots for scheduling"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "dayOfWeek": {
+      "type": "integer",
+      "required": true,
+      "min": 0,
+      "max": 6
+    },
+    "startTime": {
+      "type": "time",
+      "required": true
+    },
+    "endTime": {
+      "type": "time",
+      "required": true
+    }
+  }
+}

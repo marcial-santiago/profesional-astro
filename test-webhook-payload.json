@@ -1,0 +1,40 @@
+{
+  "id": "evt_test_webhook_payload",
+  "object": "event",
+  "api_version": "2026-02-25.clover",
+  "created": 1714567890,
+  "data": {
+    "object": {
+      "id": "cs_test_123456789",
+      "object": "checkout.session",
+      "amount_subtotal": 1000,
+      "amount_total": 1000,
+      "currency": "usd",
+      "payment_status": "paid",
+      "status": "complete",
+      "created": 1714567890,
+      "livemode": false,
+      "metadata": {
+        "nombre": "Juan Pérez",
+        "telefono": "+54 9 351 123 4567",
+        "email": "juan@example.com",
+        "mensaje": "Necesito una visita urgente",
+        "date": "2026-05-01",
+        "time": "14:30",
+        "workTypeId": "1"
+      },
+      "customer": "cus_test_12345",
+      "payment_intent": "pi_test_12345",
+      "success_url": "http://localhost:3000/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+      "cancel_url": "http://localhost:3000/checkout",
+      "mode": "payment"
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 1,
+  "request": {
+    "id": "req_test_12345",
+    "idempotency_key": null
+  },
+  "type": "checkout.session.completed"
+}

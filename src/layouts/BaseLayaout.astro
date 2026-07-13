@@ -15,7 +15,7 @@ const { title, description, theme } = Astro.props;
   <body data-theme={theme}>
     <Header />
     <main>
-      {(<slot />)}
+      <slot />
     </main>
     <Footer />
   </body>
