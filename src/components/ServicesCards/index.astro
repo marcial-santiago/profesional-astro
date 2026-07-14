@@ -11,6 +11,31 @@ const icons = [
   // Removalist - truck
   `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><rect x="16" y="8" width="6" height="8"/><circle cx="6" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><path d="M16 12h6"/></svg>`,
 ];
+
+// Receive grouped data from parent (index.astro fetches workTypes and groups by category)
+const { grouped } = Astro.props as {
+  grouped: Record<string, Array<{ name: string; image: { path: string } | null }>>;
+};
+
+// Map category keys to icons (4 service categories from data, handyman reuses cleaning)
+const categoryIcons: Record<string, string> = {
+  cleaning: icons[0],
+  gardening: icons[1],
+  concreting: icons[2],
+  removalist: icons[3],
+  handyman: icons[0],
+};
+
+// Human-friendly labels per category
+const categoryLabels: Record<string, string> = {
+  cleaning: "Cleaning",
+  gardening: "Gardening",
+  concreting: "Concreting",
+  removalist: "Removalist",
+  handyman: "Handyman",
+};
+
+const entries = Object.entries(grouped);
 ---
 
 <section class="bg-slate-50 py-24 px-6">
@@ -30,7 +55,7 @@ const icons = [
 
     <!-- Category cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      {categories.map(([category, services]) => {
+      {entries.map(([category, services]) => {
         const firstWithImage = services.find(s => s.image?.path);
         const heroImage = firstWithImage?.image?.path || "";
         const icon = categoryIcons[category] || categoryIcons.cleaning;
@@ -91,7 +116,7 @@ const icons = [
       })}
     </div>
 
-    {categories.length === 0 && (
+    {entries.length === 0 && (
       <div class="text-center py-12">
         <p class="text-xl text-slate-400">No services available yet.</p>
       </div>
