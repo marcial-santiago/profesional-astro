@@ -16,6 +16,13 @@ pnpm-debug.log*
 # environment variables
 .env
 .env.production
+.env.test
+strapi/.env
+
+# Strapi runtime artifacts (auto-generated on develop/build)
+strapi/.strapi/
+strapi/.strapi-updater.json
+strapi/types/generated/
 
 # macOS-specific files
 .DS_Store
