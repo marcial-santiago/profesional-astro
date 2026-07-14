@@ -42,3 +42,5 @@ strapi/types/generated/
 test-e2e-*.jpg
 test-e2e-*.csv
 test-csv-*.jpg
+strapi/database/
+strapi/database/.gitkeep
