@@ -44,3 +44,7 @@ test-e2e-*.csv
 test-csv-*.jpg
 strapi/database/
 strapi/database/.gitkeep
+
+# Dev stack runtime artifacts (managed by scripts/dev-up.mjs)
+.dev-pids
+.dev-logs/

@@ -13,7 +13,17 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
     "seed:all": "npm --prefix strapi run seed:all",
-    "build:all": "node scripts/build-all.mjs"
+    "build:all": "node scripts/build-all.mjs",
+    "prod:up": "node scripts/prod-up.mjs up",
+    "prod:down": "node scripts/prod-up.mjs down",
+    "prod:nuke": "node scripts/prod-up.mjs nuke",
+    "prod:status": "node scripts/prod-up.mjs status",
+    "prod:logs": "node scripts/prod-up.mjs logs",
+    "dev:up": "node scripts/dev-up.mjs up",
+    "dev:down": "node scripts/dev-up.mjs down",
+    "dev:nuke": "node scripts/dev-up.mjs nuke",
+    "dev:status": "node scripts/dev-up.mjs status",
+    "dev:logs": "node scripts/dev-up.mjs logs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.6",
