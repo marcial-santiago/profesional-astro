@@ -3,6 +3,7 @@ export const prerender = false;
 
 import BaseLayout from "../../layouts/BaseLayaout.astro";
 import { STRAPI_URL, normalizeStrapiMedia, strapiQuery } from "../../config";
+import { SERVICE_DATA } from "../../consts";
 
 interface WorkTypeImage {
   url?: string | null;
@@ -60,14 +61,13 @@ const grouped = workTypes.reduce((acc: Record<string, WorkType[]>, wt: WorkType)
   return acc;
 }, {} as Record<string, WorkType[]>);
 
-const categoryLabels: Record<string, string> = {
-  cleaning: "Cleaning Services",
-  plumbing: "Plumbing Services",
-  construction: "Construction Services",
-};
+// Derive category labels from SERVICE_DATA (single source of truth)
+const categoryLabels: Record<string, string> = Object.fromEntries(
+  SERVICE_DATA.services.map((s) => [s.nameUrl, s.sectionTitle])
+);
 ---
 
-<BaseLayout title="Our Services" description="Professional cleaning, plumbing, and construction services">
+<BaseLayout title="Our Services" description="Professional cleaning, gardening, concreting, and removalist services across Queensland">
 
   <!-- Hero -->
   <section class="bg-slate-900 py-20 px-6">

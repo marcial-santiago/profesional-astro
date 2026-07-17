@@ -10,7 +10,7 @@ export const prerender = false;
  */
 export const GET: APIRoute = async () => {
   try {
-    const res = await strapiFetch("/api/work-types?filters[isActive][$eq]=true");
+    const res = await strapiFetch("/api/work-types?filters[isActive][$eq]=true&pagination[pageSize]=100");
 
     if (!res.ok) {
       return errorResponse("Failed to fetch services", res.status);

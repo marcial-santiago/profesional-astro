@@ -6,7 +6,10 @@
     "dev": "strapi develop",
     "build": "strapi build",
     "start": "strapi start",
-    "strapi": "strapi"
+    "strapi": "strapi",
+    "seed": "node seed-strapi.js",
+    "seed:cleaning": "node seed-cleaning-services.js",
+    "seed:all": "node seed-strapi.js && node seed-cleaning-services.js"
   },
   "dependencies": {
     "@strapi/plugin-cloud": "^5.45.0",

@@ -3,15 +3,14 @@ export const prerender = false;
 
 import BaseLayout from "../../../layouts/BaseLayaout.astro";
 import { STRAPI_URL, normalizeStrapiMedia, strapiQuery } from "../../../config";
+import { SERVICE_DATA } from "../../../consts";
 import Button from "../../../components/Button/index.astro";
 import PrincipalForm from "../../../components/PrincipalForm/index.astro";
 
 export function getStaticPaths() {
-  return [
-    { params: { category: "cleaning" } },
-    { params: { category: "plumbing" } },
-    { params: { category: "construction" } },
-  ];
+  return SERVICE_DATA.services.map((s) => ({
+    params: { category: s.nameUrl },
+  }));
 }
 
 const { category } = Astro.params;
@@ -70,21 +69,17 @@ if (services.length === 0) {
   return Astro.redirect("/services");
 }
 
-// Get other categories for cross-navigation
-const otherCategories = (["cleaning", "plumbing", "construction"] as const)
-  .filter(c => c !== category);
+// Derive category lists and labels from SERVICE_DATA (single source of truth)
+const allCategories = SERVICE_DATA.services.map((s) => s.nameUrl);
+const otherCategories = allCategories.filter((c) => c !== category);
 
-const categoryLabels: Record<string, string> = {
-  cleaning: "Cleaning Services",
-  plumbing: "Plumbing Services",
-  construction: "Construction Services",
-};
+const categoryLabels: Record<string, string> = Object.fromEntries(
+  SERVICE_DATA.services.map((s) => [s.nameUrl, s.sectionTitle])
+);
 
-const categoryDescriptions: Record<string, string> = {
-  cleaning: "Professional cleaning services for homes and offices.",
-  plumbing: "Expert plumbing repairs, installations, and maintenance.",
-  construction: "Quality construction and remodeling services.",
-};
+const categoryDescriptions: Record<string, string> = Object.fromEntries(
+  SERVICE_DATA.services.map((s) => [s.nameUrl, s.sectionSubtitle])
+);
 
 const pageTitle = categoryLabels[category || ""] || `${category} Services`;
 const pageDescription = categoryDescriptions[category || ""] || "";
