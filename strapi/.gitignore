@@ -4,4 +4,7 @@ dist/
 build/
 .cache/
 .env
-public/uploads/
+# Ignore the contents of public/uploads (user-uploaded media) but
+# keep the directory itself and any .gitkeep file tracked.
+public/uploads/*
+!public/uploads/.gitkeep

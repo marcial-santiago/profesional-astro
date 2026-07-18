@@ -1,3 +1,14 @@
+packages:
+  - .
+  - strapi
+
+# pnpm v11+ explicit allowlist for build scripts.
+# These packages need to compile or post-install at install time.
+# Without this, pnpm refuses to run their install scripts and they
+# fail to work properly (e.g. better-sqlite3 native bindings).
 allowBuilds:
   esbuild: true
   sharp: true
+  '@swc/core': true
+  better-sqlite3: true
+  core-js-pure: true

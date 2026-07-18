@@ -28,7 +28,7 @@
  */
 
 import { execFileSync, execSync, spawn } from 'node:child_process';
-import { existsSync, readFileSync, statSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, statSync, readdirSync, mkdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { platform } from 'node:os';
@@ -146,9 +146,26 @@ function checkFiles() {
   // strapi/.env
   if (existsSync(join(STRAPI, '.env'))) {
     record(section, 'ok', 'strapi/.env', 'present (gitignored)');
+  } else if (existsSync(join(STRAPI, '.env.example'))) {
+    record(section, 'fail', 'strapi/.env', 'missing',
+      'cp strapi/.env.example strapi/.env   (then re-run pnpm run dev:up)');
   } else {
-    record(section, 'warn', 'strapi/.env', 'missing — Strapi will create one with dev defaults on first boot',
-      'pnpm run dev:up  (or: `cp strapi/.env.example strapi/.env`)');
+    record(section, 'fail', 'strapi/.env', 'missing and strapi/.env.example also missing',
+      'Restore from git: git checkout strapi/.env.example  (then cp strapi/.env.example strapi/.env)');
+  }
+  // strapi/public/uploads — Strapi's local upload provider needs this dir
+  // and will crash at boot if it doesn't exist. We create it (idempotent).
+  const uploadsDir = join(STRAPI, 'public', 'uploads');
+  if (existsSync(uploadsDir)) {
+    record(section, 'ok', 'strapi/public/uploads/', 'present');
+  } else {
+    try {
+      mkdirSync(uploadsDir, { recursive: true });
+      record(section, 'ok', 'strapi/public/uploads/', 'missing — created it for you');
+    } catch (e) {
+      record(section, 'fail', 'strapi/public/uploads/', `missing and could not be created: ${e.message}`,
+        `mkdir -p strapi/public/uploads   (then re-run: pnpm run dev:up)`);
+    }
   }
   // .dev-logs directory
   if (!existsSync(join(ROOT, '.dev-logs'))) {
