@@ -17,7 +17,14 @@ pnpm-debug.log*
 .env
 .env.production
 .env.test
+.env.prod
+.env.staging
+prod.env
+cookies.txt
 strapi/.env
+strapi/.env.local
+strapi/.env.production
+strapi/database/.env
 
 # Strapi runtime artifacts (auto-generated on develop/build)
 strapi/.strapi/

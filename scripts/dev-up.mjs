@@ -32,6 +32,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createConnection } from 'node:net';
 import { platform } from 'node:os';
+import { runDoctor } from './doctor.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -132,13 +133,13 @@ function killPid(pid, label) {
   }
 }
 
-// ── 1. Preflight ────────────────────────────────────────────────────
-function preflight() {
+// ── 1. Preflight (delegated to doctor.mjs) ─────────────────────────
+async function preflight() {
   step('1/5', 'Preflight');
-  const a = checkCmd('node', 'node');
-  const b = checkCmd('pnpm', 'pnpm');
-  const c = checkCmd('docker', 'docker');
-  if (!(a && b && c)) throw new Error('Missing required tool');
+  const { fail } = await runDoctor();
+  if (fail > 0) {
+    throw new Error(`Doctor found ${fail} blocking issue(s). Re-run: pnpm run doctor`);
+  }
 }
 
 // ── 2. Postgres ─────────────────────────────────────────────────────
@@ -217,7 +218,7 @@ async function spawnDev(label, cwd, port) {
 async function up() {
   mkdirSync(LOG_DIR, { recursive: true });
 
-  preflight();
+  await preflight();
   await ensurePostgres();
   await maybeSeed();
 

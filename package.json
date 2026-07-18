@@ -14,6 +14,7 @@
     "test:e2e:debug": "playwright test --debug",
     "seed:all": "npm --prefix strapi run seed:all",
     "build:all": "node scripts/build-all.mjs",
+    "doctor": "node scripts/doctor.mjs",
     "prod:up": "node scripts/prod-up.mjs up",
     "prod:down": "node scripts/prod-up.mjs down",
     "prod:nuke": "node scripts/prod-up.mjs nuke",

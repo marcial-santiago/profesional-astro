@@ -1,45 +1,60 @@
-# Professional Astro
+# profesional-astro
 
-Business website with service booking, Stripe payments, and admin panel. Built with Astro 5, PostgreSQL, and Prisma.
+Business website with service booking, Stripe payments, and a Strapi-powered admin panel. Built with **Astro 5** (SSR, Node adapter), **Strapi 5** for the CMS, **PostgreSQL 15** for persistence, and **Tailwind CSS 4** for styling.
 
 **Live demo:** [profesional-astro.vercel.app](https://profesional-astro.vercel.app/)
 
 ---
 
-## Features
+## What you get
 
-- **Service showcase** — Dynamic service pages with pricing and descriptions
-- **Visit scheduling** — Book time slots with availability validation and conflict prevention
-- **Stripe payments** — Secure checkout with DB-side price validation (client can't manipulate prices)
-- **Contact form** — Multi-field form with Zod validation and honeypot bot protection
-- **Blog** — MDX-powered content collection with RSS feed and sitemap
-- **Admin panel** — Manage work types, view bookings, update visit status
-- **Security** — CSRF tokens, rate limiting, honeypot fields, security headers (CSP, X-Frame-Options)
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Framework | Astro 5 (SSR, server mode) |
-| Styling | Tailwind CSS 4 |
-| Database | PostgreSQL 15 |
-| ORM | Prisma 7 |
-| Validation | Zod 4 |
-| Payments | Stripe Checkout |
-| Testing | Vitest + custom verification scripts |
-| Deployment | Vercel (Node adapter, standalone) |
+- **Service showcase** — Dynamic per-service pages with pricing, descriptions, and a category index.
+- **Visit scheduling** — `VisitScheduler` widget with slot availability, conflict detection, and DB-backed validation.
+- **Stripe payments** — Checkout with server-side price validation. The client cannot manipulate prices.
+- **Contact form** — Multi-field form with Zod validation and a honeypot field for bot protection.
+- **Blog** — Two writers share a single source of truth:
+  - **Strapi** stores the canonical `BlogPost` collection (admin panel).
+  - **Astro** keeps a parallel `src/content/blog/` collection of MDX starter posts.
+- **Admin panel** — Strapi at `http://localhost:1337/admin` for managing work types, visits, availability, blocked dates, blog posts, and contact-form messages.
+- **Security** — CSRF tokens, IP rate limiting, honeypot fields, strict CSP, `X-Frame-Options: DENY`, server-side input validation.
 
 ---
 
-## Quick Start
+## Tech stack
 
-### Prerequisites
+| Layer       | Technology                              |
+| ----------- | --------------------------------------- |
+| Frontend    | Astro 5 (SSR, `output: "server"`)       |
+| Adapter     | `@astrojs/node` (`mode: "standalone"`)  |
+| CMS         | Strapi 5                                |
+| Database    | PostgreSQL 15 (Docker container)        |
+| Styling     | Tailwind CSS 4 (via `@tailwindcss/vite`)|
+| Validation  | Zod 4                                   |
+| Payments    | Stripe Checkout                         |
+| Testing     | Vitest + Playwright                     |
+| Deployment  | Vercel (frontend) · Docker Compose (prod stack) |
+
+---
+
+## Prerequisites
 
 - **Node.js >= 18**
 - **pnpm >= 8** — `npm i -g pnpm`
-- **Docker** — for local PostgreSQL (or use Neon/Supabase)
+- **Docker Desktop** with the daemon running — for the local Postgres container
+
+Verify before continuing:
+
+```bash
+node --version   # v18+
+pnpm --version   # 8+
+docker info      # "Server Version" should appear
+```
+
+---
+
+## Quick start
+
+> The whole dev stack (Postgres + Strapi + Astro) is orchestrated by one script. You don't need to start each service by hand.
 
 ### 1. Install dependencies
 
@@ -47,295 +62,274 @@ Business website with service booking, Stripe payments, and admin panel. Built w
 pnpm install
 ```
 
-### 2. Set up environment variables
+### 2. Create your local `.env`
 
 ```bash
-cp example.env .env
+cp .env.example .env
 ```
 
-Edit `.env` with your values. The defaults work for local development with Docker.
+Open `.env` and (optionally) fill in real Stripe test keys. **The defaults work for local dev out of the box** — you only need to change them when you want to exercise the Stripe flow or the Strapi admin API.
 
-### 3. Start the database
+### 3. Bring the whole stack up
 
 ```bash
-docker compose up -d
+pnpm run dev:up
 ```
 
-> **Note:** The database maps to port **5433** on your host (not 5432) to avoid conflicts with other PostgreSQL instances.
+That single command will:
 
-Verify it's running:
+1. Preflight (node, pnpm, docker).
+2. Start the `profesional-astro-postgres` container (port `5433` on the host).
+3. Spawn Strapi dev server (port `1337`).
+4. Spawn Astro dev server (port `4321`).
+5. Wait until both `:1337` and `:4321` are listening, then print URLs.
+
+If you want the seed data (work types, availability, cleaning services) loaded before the servers start, add `--seed`:
 
 ```bash
-docker exec profesional-astro-postgres pg_isready -U postgres
+pnpm run dev:up -- --seed
 ```
 
-### 4. Apply the database schema
+### 4. Open the apps
+
+| App                | URL                                    |
+| ------------------ | -------------------------------------- |
+| Frontend (Astro)   | http://localhost:4321                  |
+| Strapi admin       | http://localhost:1337/admin            |
+| Strapi REST API    | http://localhost:1337/api              |
+| Postgres (host)    | `localhost:5433` (user `postgres` / pwd `prisma`) |
+
+The first time you hit Strapi admin you'll be prompted to create the first admin user. Do that once, then you're in.
+
+### 5. Manage the stack
 
 ```bash
-pnpm prisma db push
-```
-
-Optional — explore the database visually:
-
-```bash
-pnpm prisma studio
-```
-
-### 5. Start the dev server
-
-```bash
-pnpm dev
-```
-
-Open [http://localhost:4321](http://localhost:4321).
-
----
-
-## Environment Variables
-
-| Variable | Description | Default (dev) |
-|---|---|---|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:prisma@localhost:5433/postgres` |
-| `ADMIN_USER` | Admin panel username | `admin` |
-| `ADMIN_PASSWORD` | Admin panel password | `supersegura123` |
-| `ADMIN_SESSION_SECRET` | Cookie signing secret (min 32 random chars) | `dev-secret-change-in-production` |
-| `STRIPE_SECRET_KEY` | Stripe secret key | `sk_test_...` |
-| `PUBLIC_STRIPE_KEY` | Stripe publishable key | `pk_test_...` |
-| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret | `whsec_...` |
-| `APP_TIMEZONE` | IANA timezone for date validation | `America/Argentina/Buenos_Aires` |
-
-Generate a secure session secret:
-
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+pnpm run dev:status   # what's running on each port
+pnpm run dev:logs     # tail strapi.log + astro.log (Ctrl+C to stop)
+pnpm run dev:down     # stop Astro + Strapi (keeps Postgres container)
+pnpm run dev:nuke     # down + stop & remove the Postgres container
 ```
 
 ---
 
-## Project Structure
+## Environment variables
+
+The full reference lives in **`.env.example`** at the repo root — open that file first. Here's the high-level map:
+
+| Group        | Vars                                                                                                       |
+| ------------ | ---------------------------------------------------------------------------------------------------------- |
+| Database     | `DATABASE_URL`, `DATABASE_CLIENT`, `DATABASE_SSL`                                                          |
+| Strapi       | `STRAPI_URL`, `PUBLIC_STRAPI_URL`, `STRAPI_API_TOKEN`                                                      |
+| Stripe       | `STRIPE_SECRET_KEY`, `PUBLIC_STRIPE_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_API_URL`                        |
+| Security     | `ALLOWED_ORIGINS`, `ADMIN_USER`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`                                 |
+| App          | `APP_TIMEZONE`, `GOOGLE_MAPS_EMBED_URL`                                                                    |
+
+For a **production** deploy, use **`.env.prod.example`** as the template — it includes the additional `DB_USER` / `DB_PASSWORD` / `APP_KEYS` / `API_TOKEN_SALT` / `ADMIN_JWT_SECRET` / `JWT_SECRET` / `TRANSFER_TOKEN_SALT` that the Strapi container expects.
+
+Generate a strong secret:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+---
+
+## Project structure
 
 ```
 profesional-astro/
-├── src/
-│   ├── components/           # Reusable Astro components
-│   │   ├── VisitScheduler/   # Booking widget with step-by-step flow
-│   │   ├── PrincipalForm/    # Contact form with validation
-│   │   ├── BannerPrincipal/  # Hero section
-│   │   ├── ServicesCards/    # Service grid
-│   │   └── Map/              # Google Maps integration
-│   │
-│   ├── pages/                # File-based routing
-│   │   ├── index.astro       # Home page
-│   │   ├── about.astro       # About page
-│   │   ├── checkout.astro    # Payment/booking checkout
-│   │   ├── admin.astro       # Admin dashboard (protected)
-│   │   ├── services/
-│   │   │   └── [name].astro  # Dynamic service detail pages
-│   │   ├── blog/
-│   │   │   └── [slug].astro  # Blog posts from MDX
-│   │   └── api/
-│   │       ├── visits.ts         # POST — Create booking
-│   │       ├── contact.ts        # POST — Contact form
-│   │       ├── csrf.ts           # GET — CSRF token
-│   │       ├── verify-payment.ts # GET — Payment verification fallback
-│   │       ├── admin/
-│   │       │   ├── login.ts      # POST — Admin auth
-│   │       │   ├── logout.ts     # POST — Clear session
-│   │       │   ├── visits.ts     # GET/PATCH — Manage bookings
-│   │       │   └── work-types/
-│   │       │       ├── index.ts  # POST — Create work type
-│   │       │       └── [id].ts   # PUT/DELETE — Update/delete
-│   │       └── stripe/
-│   │           ├── create-checkout-session.ts  # POST — Stripe session
-│   │           └── webhook.ts                  # POST — Stripe events
-│   │
-│   ├── content/blog/         # MDX blog posts
-│   ├── lib/                  # Utilities
-│   │   ├── prisma.ts         # PrismaClient singleton
-│   │   ├── csrf.ts           # CSRF token generation/verification
-│   │   ├── rate-limiter.ts   # IP-based rate limiting
-│   │   ├── session.ts        # Session management
-│   │   └── ip-utils.ts       # IP extraction helpers
-│   ├── services/             # Business logic
-│   │   ├── visit.service.ts  # Slot availability, conflict detection
-│   │   └── validation.service.ts  # Zod schemas
-│   ├── middleware.ts         # CSRF, rate limiting, security headers
-│   └── consts.ts             # Global constants (SERVICE_DATA)
+├── astro.config.mjs            # SSR + Node adapter + Tailwind + MDX + sitemap
+├── docker-compose.yml          # Postgres 15 for local dev (port 5433)
+├── docker-compose.prod.yml     # Full prod stack: postgres + strapi + astro + nginx
+├── Dockerfile.astro            # Production image for the Astro app
+├── Dockerfile.strapi           # Production image for the Strapi app
+├── nginx.prod.conf             # Reverse proxy used in production
 │
-├── prisma/
-│   └── schema.prisma         # Data models (Message, Visit, WorkType, etc.)
+├── src/                        # Astro frontend
+│   ├── pages/                  # File-based routing
+│   │   ├── index.astro         # Home
+│   │   ├── about.astro
+│   │   ├── checkout.astro
+│   │   ├── checkout/success.astro
+│   │   ├── services/index.astro
+│   │   ├── services/[nameServices].astro    # Dynamic service detail
+│   │   ├── services/cat/[category].astro    # Dynamic category index
+│   │   ├── blog/index.astro
+│   │   ├── blog/[...slug].astro             # MDX blog post
+│   │   ├── rss.xml.js
+│   │   └── api/                             # Server endpoints
+│   │       ├── contact.ts                   # POST — Contact form
+│   │       ├── visits.ts                    # POST — Create booking
+│   │       ├── work-types.ts                # GET  — Public work types
+│   │       ├── work-types/slots.ts          # GET  — Available slots
+│   │       ├── verify-payment.ts            # GET  — Stripe success fallback
+│   │       └── stripe/
+│   │           ├── create-checkout-session.ts
+│   │           └── webhook.ts
+│   │
+│   ├── components/             # Astro UI components
+│   │   ├── VisitScheduler/     # Step-by-step booking widget + helpers
+│   │   ├── PrincipalForm/      # Contact form (Zod + honeypot)
+│   │   ├── BannerPrincipal/    # Hero section
+│   │   ├── ServicesCards/      # Service grid
+│   │   ├── Map/                # Google Maps embed
+│   │   ├── About/, Button/
+│   │   ├── Header.astro, Footer.astro, BaseHead.astro, HeaderLink.astro
+│   │
+│   ├── content/blog/           # Local MDX posts (Astro content collection)
+│   ├── lib/                    # Server-side helpers
+│   │   ├── strapi.ts           # Strapi client (with optional API token)
+│   │   ├── stripe.ts           # Stripe SDK init
+│   │   ├── payment-verification.ts
+│   │   ├── csrf.ts, rate-limiter.ts, ip-utils.ts
+│   ├── utils/                  # response.utils, slugify
+│   ├── content.config.ts       # Blog collection schema
+│   ├── config.ts               # STRAPI_URL / STRIPE_API_URL / PUBLIC_STRAPI_URL
+│   ├── constants.ts            # ALLOWED_ORIGINS, APP_TIMEZONE
+│   ├── middleware.ts           # CSP, rate limiting, CSRF
+│   └── consts.ts
+│
+├── strapi/                     # Strapi 5 CMS
+│   ├── config/                 # admin.js, database.js, server.js
+│   ├── src/api/                # 7 content-types: availability, blocked-date,
+│   │                           #   blog-post, message, visit, work-type
+│   ├── database/migrations/    # DB migration history
+│   ├── seed-strapi.js          # Seeds work-types, availability, blog posts
+│   ├── seed-cleaning-services.js
+│   └── .env                    # Strapi-only env (gitignored)
 │
 ├── scripts/
-│   └── verify-all.mjs        # Automated verification suite (35 tests)
+│   ├── dev-up.mjs              # Cross-platform dev stack orchestrator
+│   └── prod-up.mjs             # Cross-platform prod stack orchestrator
 │
-├── tests/                    # Vitest unit/integration tests
-├── docker-compose.yml        # PostgreSQL 15 container
-└── astro.config.mjs          # Astro config (SSR, Node adapter)
+├── tests/                      # Vitest unit tests
+├── e2e/                        # Playwright E2E tests
+└── .dev-logs/                  # strapi.log + astro.log (created on dev:up)
 ```
 
 ---
 
-## Database Schema
+## Database content types (Strapi)
 
-| Model | Purpose |
-|-------|---------|
-| `Message` | Contact form submissions |
-| `WorkType` | Service types with name, price, duration |
-| `Visit` | Booked appointments with status tracking |
-| `Availability` | Weekly working hours (day + time range) |
-| `BlockedDate` | Holidays/unavailable dates |
-| `RateLimit` | IP-based rate limiting storage |
-| `RevokedToken` | Invalidated session tokens |
-| `StripeEventLog` | Webhook event audit trail |
+The DB schema lives in Strapi, **not** in a Prisma file. Each content-type has a full CRUD at `/api/<name>`:
 
----
+| Collection        | Purpose                                                        |
+| ----------------- | -------------------------------------------------------------- |
+| `work-types`      | Service types — name, price, duration, image                   |
+| `visits`          | Booked appointments, status tracking, Stripe session reference |
+| `availability`    | Weekly working hours (day + time range)                        |
+| `blocked-dates`   | Holidays / unavailable dates                                   |
+| `blog-posts`      | Canonical blog content managed from the Strapi admin           |
+| `messages`        | Contact-form submissions                                       |
 
-## Key Flows
-
-### Booking a Visit
-
-1. User browses services → clicks "Book Now"
-2. VisitScheduler shows available slots (checks `Availability`, `BlockedDate`, existing `Visit` conflicts)
-3. User selects date/time → redirected to `/checkout`
-4. Two options:
-   - **Pay with Stripe** → creates idempotent checkout session with DB price/name → webhook creates `Visit` on payment
-   - **Confirm without payment** → POST to `/api/visits` → creates `Visit` directly
-
-### Security Layers
-
-| Layer | Mechanism |
-|-------|-----------|
-| CSRF | Auto-generated token cookie + `x-csrf-token` header check |
-| Rate limiting | 20 requests/min per IP per endpoint (stored in DB) |
-| Honeypot | Hidden `company` field — bots fill it, server rejects |
-| Validation | Zod schemas on all API endpoints (server-side) |
-| Price integrity | Stripe endpoint fetches price from DB, ignores client input |
-| Headers | CSP, X-Frame-Options: DENY, X-Content-Type-Options: nosniff |
-
----
-
-## Available Scripts
+Seeds (idempotent):
 
 ```bash
-# Development
-pnpm dev              # Start dev server (http://localhost:4321)
-pnpm build            # Production build
-pnpm preview          # Preview production build locally
-
-# Database
-pnpm prisma db push       # Sync schema to database
-pnpm prisma migrate dev   # Create and apply migration
-pnpm prisma studio        # Open Prisma Studio UI
-
-# Testing
-pnpm test             # Run Vitest tests
-pnpm test:watch       # Run Vitest in watch mode
-npx tsx scripts/verify-all.mjs  # Run 35 automated endpoint tests
+pnpm run seed:all      # from project root
+# or, in detail:
+pnpm --prefix strapi run seed
+pnpm --prefix strapi run seed:cleaning
 ```
 
 ---
 
-## Testing
+## Key flows
 
-### Automated Verification
+### Booking a visit
 
-```bash
-npx tsx scripts/verify-all.mjs
-```
+1. User browses services → clicks **Book Now**.
+2. `VisitScheduler` fetches slots from `/api/work-types/slots` (which checks `availability`, `blocked-dates`, and existing `visit` conflicts).
+3. User picks a date/time → redirected to `/checkout`.
+4. Two paths:
+   - **Pay with Stripe** — `/api/stripe/create-checkout-session` creates an idempotent session with the **DB-side** price/name. The webhook creates the `visit` on `checkout.session.completed`.
+   - **Confirm without payment** — POST to `/api/visits` directly.
 
-Tests 35 endpoints across 10 categories:
-- Server health, CSRF protection, honeypot, validation, admin auth, Stripe pricing, contact form, security headers, static pages, rate limiting
+### Security layers
 
-### Unit Tests
-
-```bash
-pnpm test
-```
-
-Covers: CSRF tokens, rate limiter, IP utils, session management, validation schemas, Stripe webhook.
+| Layer           | Mechanism                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------ |
+| CSRF            | Auto-generated token cookie + `x-csrf-token` header check                                 |
+| Rate limiting   | 20 requests/min per IP per endpoint (in-DB counter)                                        |
+| Honeypot        | Hidden `company` field — bots fill it, server rejects                                      |
+| Validation      | Zod schemas on every API endpoint, server-side                                            |
+| Price integrity | Stripe endpoint fetches price from Strapi, ignores client input                            |
+| Headers         | Strict CSP, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`                     |
 
 ---
 
+## Available scripts
 
-## Production Docker
+| Script                | What it does                                                       |
+| --------------------- | ------------------------------------------------------------------ |
+| `pnpm dev`            | Astro dev server only (Strapi must be up separately)               |
+| `pnpm build`          | Production build (`dist/`)                                         |
+| `pnpm preview`        | Serve the production build locally                                 |
+| `pnpm run doctor`     | Check the dev environment and print fixes for any missing/wrong config |
+| `pnpm run dev:up`     | Full dev stack (Postgres + Strapi + Astro) detached, with logs     |
+| `pnpm run dev:up -- --seed` | Same, but also runs the Strapi seeds first                   |
+| `pnpm run dev:down`   | Stop Astro + Strapi (keeps Postgres)                               |
+| `pnpm run dev:nuke`   | Stop everything, remove the Postgres container                     |
+| `pnpm run dev:status` | Show what's running on each port                                   |
+| `pnpm run dev:logs`   | Tail both server logs                                              |
+| `pnpm run prod:up`    | Bring the full production stack up via `docker-compose.prod.yml`  |
+| `pnpm run prod:down`  | Stop the production stack                                          |
+| `pnpm run seed:all`   | Run both Strapi seed scripts                                       |
+| `pnpm test`           | Vitest                                                             |
+| `pnpm test:e2e`       | Playwright                                                         |
 
-The production stack is designed to run with one command on a server. It starts:
+---
 
-- PostgreSQL 15
-- Strapi CMS
-- Astro SSR frontend
-- Nginx reverse proxy
+## Production deploy
 
-### First deploy
+The production stack is one command. It starts Postgres, Strapi, Astro, and Nginx as Docker containers, all on the same `app-network`.
+
+### First deploy on a server
 
 ```bash
 cp .env.prod.example .env
-# Fill every CHANGE_ME value before starting.
+# Fill every CHANGE_ME value. Generate secrets with:
+#   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 nano .env
 
-./scripts/prod-up.sh
-```
-
-Equivalent raw Docker command:
-
-```bash
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 ### URLs after startup
 
-- Frontend: `http://SERVER_IP/`
-- Strapi admin: `http://SERVER_IP:1337/admin`
-- Same-origin Strapi API proxy: `http://SERVER_IP/strapi/api/...`
+| What              | URL                                  |
+| ----------------- | ------------------------------------ |
+| Frontend          | `http://SERVER_IP/`                  |
+| Strapi admin      | `http://SERVER_IP:1337/admin`        |
+| Strapi via proxy  | `http://SERVER_IP/strapi/api/...`    |
 
-Strapi admin is intentionally exposed on port `1337` because the admin panel serves assets from root paths. Nginx still proxies `/strapi/` for API/uploads when same-origin access is useful.
+Strapi admin stays exposed on port `1337` (it serves assets from root paths). Nginx proxies `/strapi/` for the API and uploads.
 
 ### Useful operations
 
 ```bash
-# Follow all logs
-docker compose -f docker-compose.prod.yml logs -f
-
-# Restart after editing .env
-docker compose -f docker-compose.prod.yml up -d --build
-
-# Stop containers without deleting data
-docker compose -f docker-compose.prod.yml down
-
-# Stop and delete persistent database/uploads volumes — destructive
-docker compose -f docker-compose.prod.yml down -v
+docker compose -f docker-compose.prod.yml logs -f       # follow all logs
+docker compose -f docker-compose.prod.yml up -d --build # after .env changes
+docker compose -f docker-compose.prod.yml down          # stop, keep volumes
+docker compose -f docker-compose.prod.yml down -v       # ⚠ destructive
 ```
 
-Persistent data lives in Docker volumes:
+Persistent data lives in Docker volumes `pgdata` (DB) and `strapi_uploads` (media).
 
-- `pgdata` — PostgreSQL database
-- `strapi_uploads` — uploaded media files
+### Vercel (frontend-only deploy)
 
----
+If you only deploy the Astro app to Vercel (Strapi lives elsewhere), make sure these env vars are set in the Vercel dashboard:
 
-## Deployment
+- `DATABASE_URL` — Postgres connection string (`?sslmode=require` for Neon/Supabase)
+- `STRAPI_URL` / `PUBLIC_STRAPI_URL`
+- `STRIPE_SECRET_KEY` / `PUBLIC_STRIPE_KEY` / `STRIPE_WEBHOOK_SECRET`
+- `ALLOWED_ORIGINS` — your Vercel domain
 
-### Vercel (Recommended)
+### Stripe webhook setup
 
-1. Connect your repo to Vercel
-2. Set environment variables in Vercel dashboard
-3. Push to `main` — auto-deploys
-
-**Required env vars for production:**
-- `DATABASE_URL` — Neon/Supabase connection string (add `?sslmode=require`)
-- `ADMIN_PASSWORD` — Strong password
-- `ADMIN_SESSION_SECRET` — 64+ random chars
-- `STRIPE_SECRET_KEY` / `PUBLIC_STRIPE_KEY` — Live Stripe keys
-- `STRIPE_WEBHOOK_SECRET` — From Stripe dashboard
-
-### Stripe Webhook Setup
-
-1. Go to **Stripe Dashboard → Developers → Webhooks**
-2. Add endpoint: `https://your-domain.com/api/stripe/webhook`
-3. Select events:
-   - `checkout.session.completed`
-   - `checkout.session.async_payment_succeeded`
-4. Copy the signing secret → set as `STRIPE_WEBHOOK_SECRET`
+1. Stripe Dashboard → **Developers → Webhooks → Add endpoint**.
+2. URL: `https://your-domain.com/api/stripe/webhook`.
+3. Events: `checkout.session.completed`, `checkout.session.async_payment_succeeded`.
+4. Copy the signing secret → set as `STRIPE_WEBHOOK_SECRET`.
 
 For local development:
 
@@ -347,24 +341,65 @@ stripe listen --forward-to localhost:4321/api/stripe/webhook
 
 ## Troubleshooting
 
-### "Connection terminated unexpectedly"
+### "Something is broken" — run the doctor first
 
-Docker isn't ready yet. Wait a few seconds after `docker compose up -d` before running `pnpm dev`.
+```bash
+pnpm run doctor
+```
+
+The doctor runs **8 checks** against your environment and prints loud, color-coded output. Every ❌ has a copy-pasteable fix line right under it. Every ⚠️ has a hint.
+
+It checks:
+
+1. **Required tools** — `node` (>=18), `pnpm` (>=8), `docker`
+2. **Project files** — `.env`, `.env.example`, `node_modules/`, `strapi/.env`, `strapi/node_modules/`
+3. **Astro env vars** — `DATABASE_URL`, `STRAPI_URL`, Stripe keys (with placeholder detection), `ALLOWED_ORIGINS`, `APP_TIMEZONE`, `GOOGLE_MAPS_EMBED_URL`
+4. **Strapi env vars** — `APP_KEYS`, `API_TOKEN_SALT`, `JWT_SECRET` (and warns if they're still dev defaults), `DATABASE_URL`
+5. **Database** — Docker daemon, container running, `pg_isready`, table count
+6. **Services running** — Postgres host port, Strapi `:1337` with a smoke test on `/api/work-types`, Astro `:4321` with a smoke test on `/`
+7. **Secrets safety** — `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` not still the dev defaults
+8. **Stripe configuration** — warns if live (`sk_live_`) keys are present in a dev project
+
+The doctor is also wired into `pnpm run dev:up`'s preflight — if anything is ❌, the stack will refuse to start until you fix it.
+
+Flags:
+- `pnpm run doctor -- --soft` — print issues but exit 0 (useful in CI / scripts)
+- `pnpm run doctor -- --quiet` — only show ❌ and ⚠️, hide the ✅
+
+### "ECONNREFUSED 127.0.0.1:1337" or "fetch failed" in Astro
+
+Strapi is not running. Either start it manually (`pnpm --prefix strapi run dev`) or use the orchestrator (`pnpm run dev:up`).
+
+### "Connection terminated unexpectedly" from Postgres
+
+Docker isn't ready yet. Wait a few seconds after `pnpm run dev:up` before hitting the frontend, or check `pnpm run dev:logs`.
 
 ### Port 5433 already in use
 
-Another process is using the port. Check with:
+Another process is squatting on the host port. Either free it or change the mapping in `docker-compose.yml` (and update `DATABASE_URL` to match).
+
+### Port 1337 / 4321 already in use
+
+Stop the previous dev stack first: `pnpm run dev:down` (or `dev:nuke` if you also want to kill Postgres).
+
+### Astro dev server only listens on `::1` (IPv6)
+
+On Windows, Astro's dev server sometimes binds only to the IPv6 loopback. Use `http://localhost:4321` in the browser (it resolves to both `127.0.0.1` and `::1`); calling `http://127.0.0.1:4321` directly from some tools may time out.
+
+### Strapi admin is empty after first boot
+
+The DB starts empty. Run the seeds:
 
 ```bash
-netstat -ano | findstr 5433
+pnpm run seed:all
 ```
 
-Or change the port in `docker-compose.yml` and update `DATABASE_URL` in `.env`.
+### Prisma client / types out of sync
 
-### Prisma client out of sync
+This project does not use Prisma — it uses Strapi's own database layer. If you do see Prisma-related issues from a dependency, regenerate the node-side client:
 
 ```bash
-pnpm prisma generate
+rm -rf node_modules .astro && pnpm install
 ```
 
 ### TypeScript errors
@@ -373,4 +408,10 @@ pnpm prisma generate
 npx astro check
 ```
 
-Should show 0 errors. If not, run `pnpm install` to ensure all types are present.
+Should report 0 errors.
+
+---
+
+## License
+
+Private project — all rights reserved by the owner.
