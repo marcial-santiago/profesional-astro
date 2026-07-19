@@ -161,14 +161,17 @@ async function ensurePostgres() {
 }
 
 // ── 3. Seeds (optional) ─────────────────────────────────────────────
-async function maybeSeed() {
-  const wantSeed = process.argv.includes('--seed') || process.argv.includes('-s');
-  if (!wantSeed) return;
-  step('3/5', 'Running seeds (idempotent)');
+async function runSeeds() {
   sh('node', ['seed-strapi.js'], { cwd: STRAPI });
   ok('Base seed complete');
   sh('node', ['seed-cleaning-services.js'], { cwd: STRAPI });
   ok('Cleaning services seed complete');
+}
+
+async function maybeSeed() {
+  // Kept for backwards-compat callers; the orchestrator itself calls
+  // runSeeds() directly after Strapi is up.
+  await runSeeds();
 }
 
 // ── 4. Spawn detached ───────────────────────────────────────────────
@@ -220,9 +223,13 @@ async function up() {
 
   await preflight();
   await ensurePostgres();
-  await maybeSeed();
 
-  step(process.argv.includes('--seed') ? '4/5' : '3/5', 'Starting dev servers (detached)');
+  // Strapi must be up and listening BEFORE the seeds can run, because
+  // the seed scripts hit tables that Strapi creates on first boot.
+  // So we start Strapi first, seed, then start Astro.
+  const wantSeed = process.argv.includes('--seed') || process.argv.includes('-s');
+
+  step('3/5', 'Starting Strapi (creates the DB schema)');
 
   // Reap any stragglers from a previous run
   const old = readPids();
@@ -231,6 +238,14 @@ async function up() {
   clearPids();
 
   const strapiPid = await spawnDev('strapi', STRAPI, 1337);
+
+  if (wantSeed) {
+    step('4/5', 'Running seeds (idempotent)');
+    await runSeeds();
+  }
+
+  step(wantSeed ? '5/5' : '4/5', 'Starting Astro');
+
   const astroPid  = await spawnDev('astro', ROOT, 4321);
 
   writePids({ strapi: strapiPid, astro: astroPid });
@@ -257,8 +272,13 @@ function down(alsoStopPostgres) {
   killPid(pids.astro, 'astro');
   clearPids();
   if (alsoStopPostgres) {
+    // Stop + remove the container so the next `docker compose up -d`
+    // can recreate it from scratch. Without `docker rm`, the container
+    // name stays reserved and the next up fails with "name already in use".
     try { execSync('docker stop profesional-astro-postgres', { stdio: 'inherit', shell: true }); ok('Postgres stopped'); }
     catch { warn('Postgres not running'); }
+    try { execSync('docker rm profesional-astro-postgres', { stdio: 'inherit', shell: true }); ok('Postgres container removed'); }
+    catch { warn('Postgres container already gone'); }
   }
   ok('Dev stack down.');
 }

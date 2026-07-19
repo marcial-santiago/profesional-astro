@@ -352,8 +352,10 @@ function checkDatabase() {
   if (containerUp) {
     record(section, 'ok', `container ${PG_CONTAINER}`, 'running');
   } else {
-    record(section, 'fail', `container ${PG_CONTAINER}`, 'not running',
-      'pnpm run dev:up   (it will start the container)');
+    // Not a blocker: pnpm run dev:up (and dev:nuke → up) will start the
+    // container on its own. We warn, not fail.
+    record(section, 'warn', `container ${PG_CONTAINER}`, 'not running',
+      'pnpm run dev:up   (it will start the container for you)');
     return;
   }
 
