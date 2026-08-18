@@ -6,50 +6,69 @@ import RoomImg from "../../assets/room.jpg";
 <section class="relative w-full min-h-screen flex items-center overflow-hidden">
   <!-- Background image -->
   <div class="absolute inset-0 z-0">
-    <img
-      src={RoomImg.src}
-      alt=""
-      class="w-full h-full object-cover"
-    />
+    <img src={RoomImg.src} alt="" class="w-full h-full object-cover" />
     <!-- Dark overlay -->
     <div class="absolute inset-0 bg-slate-900/65"></div>
     <!-- Bottom gradient -->
-    <div class="absolute bottom-0 left-0 right-0 h-40 bg-linear-to-t from-slate-900 to-transparent"></div>
+    <div
+      class="absolute bottom-0 left-0 right-0 h-40 bg-linear-to-t from-slate-900 to-transparent"
+    >
+    </div>
   </div>
 
   <!-- Content -->
   <div class="relative z-10 max-w-7xl mx-auto px-6 w-full pt-24 pb-20">
-      <div class="max-w-3xl">
-        <!-- Badge -->
-        <div class="inline-flex items-center gap-2 bg-sky-500/20 border border-sky-500/40 text-sky-300 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
-          <span class="w-2 h-2 bg-sky-400 rounded-full animate-pulse"></span>
-          Brisbane & Mount Gravatt · Available 7 days
-        </div>
+    <div class="max-w-3xl">
+      <!-- Badge -->
+      <div
+        class="inline-flex items-center gap-2 bg-sky-500/20 border border-sky-500/40 text-sky-300 text-sm font-medium px-4 py-1.5 rounded-full mb-6"
+      >
+        <span class="w-2 h-2 bg-sky-400 rounded-full animate-pulse"></span>
+        Brisbane, Sunshine Coast, Gold Coast · Monday – Saturday: 7:00 AM – 6:00 PM
+      </div>
 
-        <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-6">
-          Roldans
-          <span class="text-sky-400 block">Multiservices</span>
-        </h1>
+      <h1
+        class="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-6"
+      >
+        Roldans
+        <span class="text-sky-400 block">Multiservices</span>
+      </h1>
 
-      <p class="text-lg md:text-xl text-slate-300 mb-4 max-w-xl leading-relaxed">
+      <p
+        class="text-lg md:text-xl text-slate-300 mb-4 max-w-xl leading-relaxed"
+      >
         Reliable house maintenance services across Queensland for over 15 years.
       </p>
-      <p class="text-base md:text-lg text-slate-400 mb-10 max-w-xl leading-relaxed">
-        We help homeowners and businesses maintain their properties with high-quality workmanship and exceptional customer service. From cleaning and gardening to concreting and removalist solutions — your property is our priority.
+      <p
+        class="text-base md:text-lg text-slate-400 mb-10 max-w-xl leading-relaxed"
+      >
+        We help homeowners and businesses maintain their properties with
+        high-quality workmanship and exceptional customer service. From cleaning
+        and gardening to concreting and removalist solutions — your property is
+        our priority.
       </p>
 
       <!-- CTAs -->
       <div class="flex flex-wrap gap-4 mb-16">
-        <a href="/#contacto">
+        <a href="/#contact">
           <Button text="Get a Free Quote" />
         </a>
         <a
-          href="/#servicios"
+          href="/#services"
           class="flex items-center gap-2 px-6 py-3 rounded-xl border border-white/30 text-white font-semibold hover:bg-white/10 transition-all duration-200"
         >
           View All Services
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M5 12h14M12 5l7 7-7 7"></path>
           </svg>
         </a>
       </div>
@@ -80,10 +99,22 @@ import RoomImg from "../../assets/room.jpg";
   </div>
 
   <!-- Scroll indicator -->
-  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1 text-white/40">
+  <div
+    class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1 text-white/40"
+  >
     <span class="text-xs tracking-widest uppercase">Scroll</span>
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-bounce">
-      <path d="M7 10l5 5 5-5"/>
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="animate-bounce"
+    >
+      <path d="M7 10l5 5 5-5"></path>
     </svg>
   </div>
 </section>

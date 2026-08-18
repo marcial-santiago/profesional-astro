@@ -7,12 +7,6 @@ import { SERVICE_DATA } from "../../../consts";
 import Button from "../../../components/Button/index.astro";
 import PrincipalForm from "../../../components/PrincipalForm/index.astro";
 
-export function getStaticPaths() {
-  return SERVICE_DATA.services.map((s) => ({
-    params: { category: s.nameUrl },
-  }));
-}
-
 const { category } = Astro.params;
 
 interface WorkTypeImage {
@@ -83,25 +77,71 @@ const categoryDescriptions: Record<string, string> = Object.fromEntries(
 
 const pageTitle = categoryLabels[category || ""] || `${category} Services`;
 const pageDescription = categoryDescriptions[category || ""] || "";
+
+const themeMap: Record<string, { badge: string; badgeText: string; strip: string; badgePrice: string; btnBg: string; btnHover: string; btnText: string; sectionSub: string }> = {
+  cleaning: {
+    badge: "bg-sky-500/20",
+    badgeText: "text-sky-300",
+    strip: "bg-sky-600",
+    badgePrice: "bg-sky-500",
+    btnBg: "bg-sky-50",
+    btnHover: "hover:bg-sky-100",
+    btnText: "text-sky-700",
+    sectionSub: "text-sky-600",
+  },
+  gardening: {
+    badge: "bg-emerald-500/20",
+    badgeText: "text-emerald-300",
+    strip: "bg-emerald-600",
+    badgePrice: "bg-emerald-500",
+    btnBg: "bg-emerald-50",
+    btnHover: "hover:bg-emerald-100",
+    btnText: "text-emerald-700",
+    sectionSub: "text-emerald-600",
+  },
+  concreting: {
+    badge: "bg-amber-500/20",
+    badgeText: "text-amber-300",
+    strip: "bg-amber-600",
+    badgePrice: "bg-amber-500",
+    btnBg: "bg-amber-50",
+    btnHover: "hover:bg-amber-100",
+    btnText: "text-amber-700",
+    sectionSub: "text-amber-600",
+  },
+  removalist: {
+    badge: "bg-red-900/30",
+    badgeText: "text-red-300",
+    strip: "bg-red-800",
+    badgePrice: "bg-red-700",
+    btnBg: "bg-red-50",
+    btnHover: "hover:bg-red-100",
+    btnText: "text-red-800",
+    sectionSub: "text-red-700",
+  },
+};
+
+const currentTheme = themeMap[category || ""] || themeMap.cleaning;
+const heroImage = services.find((s: WorkType) => s.image?.path)?.image?.path;
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription}>
 
   <!-- Hero -->
-  <section class="relative min-h-[60vh] flex items-end overflow-hidden">
+  <section class="relative bg-slate-900 text-white overflow-hidden">
     <!-- Background -->
     <div class="absolute inset-0 z-0">
-      {services.find((s: WorkType) => s.image?.path)?.image?.path ? (
+      {heroImage ? (
         <img
-          src={services.find((s: WorkType) => s.image?.path)!.image!.path}
+          src={heroImage}
           alt={pageTitle}
           class="w-full h-full object-cover"
         />
       ) : (
         <div class="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900"></div>
       )}
-      <div class="absolute inset-0 bg-slate-900/70"></div>
-      <div class="absolute bottom-0 left-0 right-0 h-48 bg-linear-to-t from-slate-900 to-transparent"></div>
+      <div class="absolute inset-0 bg-slate-900/80"></div>
+      <div class="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-slate-900 to-transparent"></div>
     </div>
 
     <div class="relative z-10 max-w-7xl mx-auto px-6 pb-16 pt-40 w-full">
@@ -111,11 +151,11 @@ const pageDescription = categoryDescriptions[category || ""] || "";
         <span>/</span>
         <a href="/services" class="hover:text-white transition-colors">Services</a>
         <span>/</span>
-        <span class="text-white">{pageTitle}</span>
+        <span class="text-white capitalize">{category}</span>
       </nav>
 
       <div class="max-w-3xl">
-        <span class="inline-block px-3 py-1 bg-sky-500/20 text-sky-300 text-xs font-semibold rounded-full uppercase tracking-wide mb-4">
+        <span class={`inline-block px-3 py-1 ${currentTheme.badge} ${currentTheme.badgeText} text-xs font-semibold rounded-full uppercase tracking-wide mb-4`}>
           {category}
         </span>
         <h1 class="text-5xl md:text-6xl font-bold text-white leading-tight mb-4">
@@ -129,11 +169,11 @@ const pageDescription = categoryDescriptions[category || ""] || "";
             <Button text="Get a Free Quote" />
           </a>
           <a
-            href="tel:0466018580"
+            href="tel:0427 441 139"
             class="flex items-center gap-2 px-6 py-3 rounded-xl border border-white/30 text-white font-semibold hover:bg-white/10 transition-all duration-200 text-sm"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13A19.79 19.79 0 0 1 3.07 4.33A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
             </svg>
             Call Now
           </a>
@@ -143,7 +183,7 @@ const pageDescription = categoryDescriptions[category || ""] || "";
   </section>
 
   <!-- Trust strip -->
-  <section class="bg-sky-600 py-5 px-6">
+  <section class={`${currentTheme.strip} py-5 px-6`}>
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-8 text-white text-sm font-medium">
       {[
         { icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`, label: "Licensed & Insured" },
@@ -163,7 +203,7 @@ const pageDescription = categoryDescriptions[category || ""] || "";
   <section class="py-24 bg-white px-6">
     <div class="max-w-7xl mx-auto">
       <div class="text-center mb-14">
-        <p class="text-sky-600 font-semibold text-sm uppercase tracking-widest mb-2">What We Offer</p>
+        <p class={`${currentTheme.sectionSub} font-semibold text-sm uppercase tracking-widest mb-2`}>What We Offer</p>
         <h2 class="text-4xl font-bold text-slate-900 mb-4">{pageTitle} — Available Services</h2>
         <p class="text-slate-500 max-w-2xl mx-auto leading-relaxed">
           Choose from our range of professional {category} services. Each one tailored to your needs.
@@ -187,7 +227,7 @@ const pageDescription = categoryDescriptions[category || ""] || "";
                 </div>
               )}
               <div class="absolute inset-0 bg-linear-to-t from-slate-900/60 to-transparent"></div>
-              <div class="absolute top-3 right-3 bg-sky-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+              <div class={`absolute top-3 right-3 ${currentTheme.badgePrice} text-white text-xs font-bold px-3 py-1 rounded-full`}>
                 From ${item.price}
               </div>
             </div>
@@ -201,7 +241,7 @@ const pageDescription = categoryDescriptions[category || ""] || "";
               <p class="text-xs text-slate-400 mb-4">⏱️ {item.duration} min</p>
               <a
                 href={`/services/${item.slug}`}
-                class="inline-flex items-center gap-2 w-full justify-center px-5 py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-sm rounded-xl transition-colors duration-200"
+                class={`inline-flex items-center gap-2 w-full justify-center px-5 py-2.5 ${currentTheme.btnBg} ${currentTheme.btnHover} ${currentTheme.btnText} font-semibold text-sm rounded-xl transition-colors duration-200`}
               >
                 View Details
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">

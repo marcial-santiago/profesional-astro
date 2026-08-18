@@ -1,7 +1,6 @@
 ---
 import About from "../components/About/index.astro";
 import BannerPrincipal from "../components/BannerPrincipal/index.astro";
-import Map from "../components/Map/index.astro";
 import PrincipalForm from "../components/PrincipalForm/index.astro";
 import ServicesCards from "../components/ServicesCards/index.astro";
 import VisitScheduler from "../components/VisitScheduler.astro";
@@ -37,9 +36,16 @@ const workTypesQuery = strapiQuery({
   "sort[0]": "category:asc",
   "sort[1]": "name:asc",
 });
-const res = await fetch(`${STRAPI_URL}/api/work-types?${workTypesQuery}`);
-const strapiData = await res.json();
-const strapiWorkTypes: StrapiWorkType[] = strapiData.data || [];
+let strapiWorkTypes: StrapiWorkType[] = [];
+try {
+  const res = await fetch(`${STRAPI_URL}/api/work-types?${workTypesQuery}`);
+  if (res.ok) {
+    const strapiData = await res.json();
+    strapiWorkTypes = strapiData.data || [];
+  }
+} catch (error) {
+  console.warn("Strapi backend is unreachable, proceeding with empty workTypes array:", error);
+}
 
 // Transform Strapi response to match existing format
 const workTypes = strapiWorkTypes.map((wt) => {
@@ -57,42 +63,42 @@ const workTypes = strapiWorkTypes.map((wt) => {
   };
 });
 
-type WorkType = typeof workTypes[number];
-const grouped = workTypes.reduce((acc: Record<string, WorkType[]>, wt: WorkType) => {
-  if (!acc[wt.category]) acc[wt.category] = [];
-  acc[wt.category].push(wt);
-  return acc;
-}, {} as Record<string, WorkType[]>);
+type WorkType = (typeof workTypes)[number];
+const grouped = workTypes.reduce(
+  (acc: Record<string, WorkType[]>, wt: WorkType) => {
+    if (!acc[wt.category]) acc[wt.category] = [];
+    acc[wt.category].push(wt);
+    return acc;
+  },
+  {} as Record<string, WorkType[]>,
+);
 ---
 
 <BaseLayaout>
-  <section id="inicio">
+  <section id="home">
     <BannerPrincipal />
   </section>
-  <section id="servicios">
+  <section id="services">
     <ServicesCards grouped={grouped} />
   </section>
-  <section id="nosotros">
+  <section id="about">
     <About />
   </section>
-  <section id="agenda" class="py-20 bg-slate-50">
+  <section id="book-visit" class="py-24 bg-slate-100/90 relative">
     <div class="max-w-7xl mx-auto px-4">
       <div class="text-center mb-12">
         <h2 class="text-3xl font-bold text-slate-900 md:text-4xl mb-4">
           Book Your Visit
         </h2>
         <p class="text-slate-600 max-w-2xl mx-auto">
-          Pick a service and time that works for you.
-          We'll confirm your appointment right away.
+          Pick a service and time that works for you. We'll confirm your
+          appointment right away.
         </p>
       </div>
       <VisitScheduler />
     </div>
   </section>
-  <section id="contacto">
+  <section id="contact">
     <PrincipalForm />
-  </section>
-  <section id="ubicacion">
-    <Map />
   </section>
 </BaseLayaout>

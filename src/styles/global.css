@@ -37,15 +37,15 @@
 }
 
 [data-theme="removalist"] {
-  --accent-50: #faf5ff;
-  --accent-100: #f3e8ff;
-  --accent-300: #d8b4fe;
-  --accent-400: #c084fc;
-  --accent-500: #a855f7;
-  --accent-600: #9333ea;
-  --accent-700: #7e22ce;
-  --accent-800: #6b21a8;
-  --accent-900: #581c87;
+  --accent-50: #fef2f2;
+  --accent-100: #fee2e2;
+  --accent-300: #fca5a5;
+  --accent-400: #f87171;
+  --accent-500: #dc2626;
+  --accent-600: #b91c1c;
+  --accent-700: #991b1b;
+  --accent-800: #7f1d1d;
+  --accent-900: #450a0a;
 }
 
 html {
