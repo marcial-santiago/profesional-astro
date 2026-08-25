@@ -222,9 +222,11 @@ const { class: className } = Astro.props;
                 id="telefono"
                 name="telefono"
                 required
-                pattern="[\d\s\+\-\(\)]{8,20}"
+                inputmode="numeric"
+                pattern="[0-9]{8,20}"
+                oninput="this.value = this.value.replace(/\D/g, '')"
                 class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[var(--accent-500)]/20 focus:border-[var(--accent-500)] outline-none transition"
-                placeholder="0400 000 000"
+                placeholder="0400000000"
                 aria-required="true"
               />
               <span class="error-message hidden text-xs text-red-500 mt-1"

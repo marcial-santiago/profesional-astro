@@ -60,6 +60,7 @@ export const POST: APIRoute = async ({ request }) => {
   // Validate work type exists and get server-side price (prevents price manipulation)
   const workType = await getWorkType(workTypeId);
   if (!workType || !workType.isActive) {
+    console.error(`[Stripe Checkout] Service not available for workTypeId: ${workTypeId}`, workType);
     return errorResponse("Service not available", 400);
   }
 
@@ -79,6 +80,7 @@ export const POST: APIRoute = async ({ request }) => {
   const clientReferenceId = randomUUID();
 
   try {
+    const currency = (process.env.PUBLIC_CURRENCY || import.meta.env.PUBLIC_CURRENCY || "aud").toLowerCase();
     const session = await stripe.checkout.sessions.create(
       {
         mode: "payment",
@@ -86,7 +88,7 @@ export const POST: APIRoute = async ({ request }) => {
           {
             quantity: 1,
             price_data: {
-              currency: "usd",
+              currency,
               unit_amount: amountInCents,
               product_data: {
                 name: workType.name,

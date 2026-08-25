@@ -51,6 +51,7 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const workType = await getWorkType(workTypeId);
     if (!workType || !workType.isActive) {
+      console.error(`[visits] Service not available for workTypeId: ${workTypeId}`, workType);
       return errorResponse("Service not available", 400);
     }
 

@@ -98,9 +98,10 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
                 id="telefono"
                 name="telefono"
                 required
-                pattern="[0-9 +()\-]{8,20}"
-                placeholder="+61 400 000 000"
-                title="Only numbers, spaces, +, -, and ()"
+                inputmode="numeric"
+                pattern="[0-9]{8,20}"
+                placeholder="0400000000"
+                title="Only numbers allowed (8 to 20 digits)"
                 class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
               />
               <p class="error-msg hidden text-xs text-red-500 mt-1"></p>
@@ -147,7 +148,7 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/>
               </svg>
-              Pay with Stripe · <span id="stripe-price-label">USD 10.00</span>
+              Pay with Stripe · <span id="stripe-price-label">AUD $10.00</span>
             </button>
 
             <!-- Confirm without payment -->
@@ -230,7 +231,7 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
     const data: CheckoutData = JSON.parse(raw);
 
     const price = data.price ?? 10;
-    const priceLabel = `USD ${price.toFixed(2)}`;
+    const priceLabel = `AUD $${price.toFixed(2)}`;
 
     const el = (id: string) => {
       const element = document.getElementById(id);
@@ -367,6 +368,13 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
         submitBtn.textContent = "Confirm Appointment";
       }
     });
+
+    const phoneInput = document.getElementById("telefono") as HTMLInputElement | null;
+    if (phoneInput) {
+      phoneInput.addEventListener("input", () => {
+        phoneInput.value = phoneInput.value.replace(/\D/g, "");
+      });
+    }
   }
 
   function showFieldError(fieldId: string, message: string): void {
@@ -414,12 +422,12 @@ import BaseLayaout from "../layouts/BaseLayaout.astro";
       clearFieldError("nombre");
     }
 
-    const phoneRegex = /^[\d\s\+\-\(\)]{8,20}$/;
+    const phoneRegex = /^\d{8,20}$/;
     if (!telefono) {
       showFieldError("telefono", "Phone number is required");
       valid = false;
     } else if (!phoneRegex.test(telefono)) {
-      showFieldError("telefono", "Invalid phone number format");
+      showFieldError("telefono", "Phone number must contain only numbers (8-20 digits)");
       valid = false;
     } else {
       clearFieldError("telefono");
