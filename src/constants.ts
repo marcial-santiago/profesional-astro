@@ -50,14 +50,44 @@ export const DEFAULT_SLOT_DURATION = 60; // minutes
 // Set ALLOWED_ORIGINS in .env as comma-separated list for production.
 // Falls back to localhost for local development.
 function parseAllowedOrigins(): string[] {
-  const env = import.meta.env.ALLOWED_ORIGINS ?? "";
+  const env =
+    (typeof process !== "undefined" && process.env?.ALLOWED_ORIGINS) ||
+    (typeof import.meta !== "undefined" && import.meta.env?.ALLOWED_ORIGINS) ||
+    "";
+
   const fromEnv = env
     .split(",")
-    .map((o: string) => o.trim())
+    .map((o: string) => o.trim().replace(/\/+$/, ""))
     .filter(Boolean);
-  return fromEnv.length > 0
-    ? fromEnv
-    : ["http://localhost:4321", "http://localhost:3000"];
+
+  if (fromEnv.length > 0) {
+    const expanded = new Set<string>();
+    for (const origin of fromEnv) {
+      expanded.add(origin);
+      try {
+        const url = new URL(origin);
+        if (url.hostname.startsWith("www.")) {
+          url.hostname = url.hostname.replace(/^www\./, "");
+          expanded.add(url.origin);
+        } else if (
+          !url.hostname.includes("localhost") &&
+          !url.hostname.match(/^\d+\.\d+\.\d+\.\d+$/)
+        ) {
+          url.hostname = `www.${url.hostname}`;
+          expanded.add(url.origin);
+        }
+      } catch {
+        // ignore invalid URL format
+      }
+    }
+    return Array.from(expanded);
+  }
+
+  return ["http://localhost:4321", "http://localhost:3000"];
+}
+
+export function getAllowedOrigins(): string[] {
+  return parseAllowedOrigins();
 }
 
 export const ALLOWED_ORIGINS: string[] = parseAllowedOrigins();

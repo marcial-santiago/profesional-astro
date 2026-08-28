@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { createVisit, getWorkType, strapiFetch } from "../../lib/strapi";
-import { ALLOWED_ORIGINS } from "../../constants";
+import { getAllowedOrigins } from "../../constants";
 import {
   errorResponse,
   internalErrorResponse,
@@ -12,15 +12,13 @@ export const prerender = false;
 
 const bodySchema = z.object({
   nombre: z.string().min(3).max(100),
-  telefono: z.string().min(8).max(20),
-  email: z.email().or(z.literal("")).optional(),
+  telefono: z.string().min(1),
+  email: z.string().email().or(z.literal("")).optional(),
   mensaje: z.string().max(500).optional(),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // YYYY-MM-DD
-  time: z.string().regex(/^\d{2}:\d{2}$/), // HH:mm
-  workTypeId: z.number().int().positive(), // accepted but not sent to Strapi
-  status: z.enum(["pending", "confirmed", "cancelled"]).optional().default("pending"),
-  // Honeypot
-  company: z.string().optional(),
+  date: z.string(),
+  time: z.string(),
+  workTypeId: z.number().int().positive(),
+  status: z.enum(["PENDING", "CONFIRMED", "CANCELLED"]).optional(),
 });
 
 export const POST: APIRoute = async ({ request }) => {
@@ -42,9 +40,40 @@ export const POST: APIRoute = async ({ request }) => {
 
   const { nombre, telefono, email, mensaje, date, time, workTypeId, status } = parsed.data;
 
-  // Validate origin
-  const requestOrigin = request.headers.get("origin") ?? "";
-  if (!ALLOWED_ORIGINS.includes(requestOrigin)) {
+  // Extract request origin from Origin header, Referer, or Host header
+  let rawOrigin = request.headers.get("origin")?.replace(/\/+$/, "") ?? "";
+  if (!rawOrigin) {
+    const referer = request.headers.get("referer");
+    if (referer) {
+      try {
+        rawOrigin = new URL(referer).origin;
+      } catch {
+        // ignore
+      }
+    }
+  }
+  if (!rawOrigin) {
+    const host = request.headers.get("host");
+    const proto = request.headers.get("x-forwarded-proto") || "https";
+    if (host) {
+      rawOrigin = `${proto}://${host}`.replace(/\/+$/, "");
+    }
+  }
+
+  const allowedOrigins = getAllowedOrigins();
+  const isAllowed = allowedOrigins.some((allowed) => {
+    if (allowed === rawOrigin) return true;
+    try {
+      const rawUrl = new URL(rawOrigin);
+      const allowedUrl = new URL(allowed);
+      return rawUrl.hostname === allowedUrl.hostname;
+    } catch {
+      return false;
+    }
+  });
+
+  if (!isAllowed) {
+    console.error(`[Visits] Origin not allowed: "${rawOrigin}". Allowed origins:`, allowedOrigins);
     return errorResponse("Origin not allowed", 400);
   }
 

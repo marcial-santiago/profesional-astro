@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { stripe } from "../../../lib/stripe";
 import { getWorkType } from "../../../lib/strapi";
-import { ALLOWED_ORIGINS } from "../../../constants";
+import { getAllowedOrigins } from "../../../constants";
 import {
   errorResponse,
   internalErrorResponse,
@@ -68,12 +68,43 @@ export const POST: APIRoute = async ({ request }) => {
   const price = workType.price ?? clientPrice ?? DEFAULT_SERVICE_PRICE;
   const amountInCents = Math.round(price * 100);
 
-  // Use origin only if it's in the whitelist — prevents open redirect
-  const requestOrigin = request.headers.get("origin") ?? "";
-  if (!ALLOWED_ORIGINS.includes(requestOrigin)) {
+  // Extract request origin from Origin header, Referer, or Host header
+  let rawOrigin = request.headers.get("origin")?.replace(/\/+$/, "") ?? "";
+  if (!rawOrigin) {
+    const referer = request.headers.get("referer");
+    if (referer) {
+      try {
+        rawOrigin = new URL(referer).origin;
+      } catch {
+        // ignore
+      }
+    }
+  }
+  if (!rawOrigin) {
+    const host = request.headers.get("host");
+    const proto = request.headers.get("x-forwarded-proto") || "https";
+    if (host) {
+      rawOrigin = `${proto}://${host}`.replace(/\/+$/, "");
+    }
+  }
+
+  const allowedOrigins = getAllowedOrigins();
+  const isAllowed = allowedOrigins.some((allowed) => {
+    if (allowed === rawOrigin) return true;
+    try {
+      const rawUrl = new URL(rawOrigin);
+      const allowedUrl = new URL(allowed);
+      return rawUrl.hostname === allowedUrl.hostname;
+    } catch {
+      return false;
+    }
+  });
+
+  if (!isAllowed) {
+    console.error(`[Stripe Checkout] Origin not allowed: "${rawOrigin}". Allowed origins:`, allowedOrigins);
     return errorResponse("Origin not allowed", 400);
   }
-  const origin = requestOrigin;
+  const origin = rawOrigin;
 
   const idempotencySeed = `${workTypeId}|${date}|${time}|${telefono}|${nombre}`;
   const idempotencyKey = createHash("sha256").update(idempotencySeed).digest("hex");
