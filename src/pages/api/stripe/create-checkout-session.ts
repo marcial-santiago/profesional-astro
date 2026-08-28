@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { stripe } from "../../../lib/stripe";
 import { getWorkType } from "../../../lib/strapi";
-import { getAllowedOrigins } from "../../../constants";
+import { ALLOWED_ORIGINS, getAllowedOrigins } from "../../../constants";
 import {
   errorResponse,
   internalErrorResponse,
@@ -88,7 +88,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
   }
 
-  const allowedOrigins = getAllowedOrigins();
+  const allowedOrigins = typeof getAllowedOrigins === "function" ? getAllowedOrigins() : (ALLOWED_ORIGINS ?? []);
   const isAllowed = allowedOrigins.some((allowed) => {
     if (allowed === rawOrigin) return true;
     try {
