@@ -27,10 +27,12 @@ export async function strapiFetch(path: string, options?: RequestInit): Promise<
 }
 
 /**
- * Get a single WorkType by ID.
+/**
+ * Get a single WorkType by ID or DocumentID.
  */
-export async function getWorkType(id: number): Promise<{
+export async function getWorkType(id: number | string): Promise<{
   id: number;
+  documentId?: string;
   name: string;
   slug: string;
   description: string | null;
@@ -64,7 +66,8 @@ export async function getWorkType(id: number): Promise<{
     const attrs = raw.attributes ? { id: raw.id, ...raw.attributes } : raw;
 
     return {
-      id: attrs.id ?? id,
+      id: attrs.id ?? (typeof id === "number" ? id : 0),
+      documentId: raw.documentId || attrs.documentId,
       name: attrs.name || "Service",
       slug: attrs.slug || "",
       description: attrs.description || null,
@@ -105,7 +108,7 @@ export async function findVisitsByStripeEvent(eventId: string): Promise<any[]> {
 
 /**
  * Create a visit in Strapi.
- * Includes workType relation when available.
+ * Includes workType relation when available and embeds service name in message.
  */
 export async function createVisit(data: {
   nombre: string;
@@ -113,15 +116,46 @@ export async function createVisit(data: {
   email?: string;
   mensaje?: string;
   date: string;
-  workType?: number;
+  workType?: number | string;
   status: string;
   stripeSessionId?: string;
   stripeEventId?: string;
 }): Promise<any> {
+  let docId: string | undefined = undefined;
+  let numId: number | undefined = undefined;
+  let workTypeName: string | undefined = undefined;
+
+  if (data.workType) {
+    if (typeof data.workType === "string") {
+      docId = data.workType;
+    } else {
+      numId = data.workType;
+    }
+
+    try {
+      const wt = await getWorkType(data.workType);
+      if (wt) {
+        docId = wt.documentId || docId;
+        numId = wt.id || numId;
+        workTypeName = wt.name;
+      }
+    } catch {
+      // ignore lookup error
+    }
+  }
+
+  // Prepend service name to mensaje if not already present so it's always visible in Strapi admin
+  let updatedMensaje = data.mensaje || "";
+  if (workTypeName && !updatedMensaje.includes(workTypeName)) {
+    updatedMensaje = updatedMensaje
+      ? `[Servicio: ${workTypeName}] ${updatedMensaje}`
+      : `[Servicio: ${workTypeName}]`;
+  }
+
   const baseData = {
     nombre: data.nombre,
     telefono: data.telefono,
-    mensaje: data.mensaje || "",
+    mensaje: updatedMensaje,
     date: data.date,
     status: data.status,
     ...(data.email && { email: data.email }),
@@ -129,64 +163,45 @@ export async function createVisit(data: {
     ...(data.stripeEventId && { stripeEventId: data.stripeEventId }),
   };
 
-  const body = {
-    data: {
-      ...baseData,
-      ...(data.workType && { workType: data.workType }),
-    },
-  };
+  // Build target identifiers to try linking the workType relation in Strapi v4 / v5
+  const targets = Array.from(new Set([docId, numId, data.workType].filter(Boolean)));
 
-  console.log("[Strapi] createVisit payload:", JSON.stringify(body, null, 2));
-
-  let res = await strapiFetch("/api/visits", {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
-  
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    console.error("[Strapi] createVisit failed:", JSON.stringify(error, null, 2));
-
-    // Fallback 1: Strapi v5 relation format with connect
-    if (data.workType) {
-      const fallbackBody = {
-        data: {
-          ...baseData,
-          workType: { connect: [data.workType] },
-        },
-      };
-      const fallbackRes = await strapiFetch("/api/visits", {
-        method: "POST",
-        body: JSON.stringify(fallbackBody),
-      });
-      if (fallbackRes.ok) {
-        return fallbackRes.json();
-      }
-
-      // Fallback 2: If workType is not permitted or populated via public API, create without relation
-      const plainBody = { data: baseData };
-      const plainRes = await strapiFetch("/api/visits", {
-        method: "POST",
-        body: JSON.stringify(plainBody),
-      });
-      if (plainRes.ok) {
-        console.log("[Strapi] Visit created without workType relation link");
-        return plainRes.json();
-      }
-
-      const fallbackErr = await fallbackRes.json().catch(() => ({}));
-      console.error("[Strapi] createVisit fallback failed:", JSON.stringify(fallbackErr, null, 2));
-      const fbMsg =
-        fallbackErr.error?.message ||
-        fallbackErr.message ||
-        fallbackErr.error ||
-        `Strapi error: ${fallbackRes.status}`;
-      throw new Error(typeof fbMsg === "string" ? fbMsg : JSON.stringify(fbMsg));
+  for (const target of targets) {
+    // 1. Direct target (Strapi v5 documentId or numeric id)
+    const directBody = { data: { ...baseData, workType: target } };
+    const directRes = await strapiFetch("/api/visits", {
+      method: "POST",
+      body: JSON.stringify(directBody),
+    });
+    if (directRes.ok) {
+      console.log(`[Strapi] Visit created with workType relation direct target (${target})`);
+      return directRes.json();
     }
 
-    const msg = error.error?.message || error.message || error.error || `Strapi error: ${res.status}`;
-    throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
+    // 2. Connect array (Strapi v5/v4 connect format)
+    const connectBody = { data: { ...baseData, workType: { connect: [target] } } };
+    const connectRes = await strapiFetch("/api/visits", {
+      method: "POST",
+      body: JSON.stringify(connectBody),
+    });
+    if (connectRes.ok) {
+      console.log(`[Strapi] Visit created with workType relation connect target (${target})`);
+      return connectRes.json();
+    }
   }
-  
-  return res.json();
+
+  // Fallback: If relation linking fails, create visit with baseData (which includes [Servicio: Name] in mensaje)
+  const plainBody = { data: baseData };
+  const plainRes = await strapiFetch("/api/visits", {
+    method: "POST",
+    body: JSON.stringify(plainBody),
+  });
+  if (plainRes.ok) {
+    console.log("[Strapi] Visit created without relation, service name embedded in mensaje");
+    return plainRes.json();
+  }
+
+  const error = await plainRes.json().catch(() => ({}));
+  const msg = error.error?.message || error.message || error.error || `Strapi error: ${plainRes.status}`;
+  throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
 }
