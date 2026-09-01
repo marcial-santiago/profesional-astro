@@ -44,7 +44,10 @@ try {
     strapiWorkTypes = strapiData.data || [];
   }
 } catch (error) {
-  console.warn("Strapi backend is unreachable, proceeding with empty workTypes array:", error);
+  console.warn(
+    "Strapi backend is unreachable, proceeding with empty workTypes array:",
+    error,
+  );
 }
 
 // Transform Strapi response to match existing format
