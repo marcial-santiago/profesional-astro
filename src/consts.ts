@@ -34,7 +34,7 @@ export const SERVICE_DATA: ServiceAll = {
           id: 2,
           title: "Office Cleaning",
           description: "Keep your workspace clean and productive.",
-          image: "/images/cleaning-office.jpg",
+          image: "/images/cleaning-office.png",
           cta: "Request Quote",
           price: 10,
         },

@@ -84,9 +84,9 @@ const grouped = workTypes.reduce(
   <section id="about">
     <About />
   </section>
-  <section id="book-visit" class="py-24 bg-slate-100/90 relative">
+  <section id="book-visit" class="py-24 bg-slate-100/90 relative overflow-hidden">
     <div class="max-w-7xl mx-auto px-4">
-      <div class="text-center mb-12">
+      <div class="reveal text-center mb-12">
         <h2 class="text-3xl font-bold text-slate-900 md:text-4xl mb-4">
           Book Your Visit
         </h2>
@@ -95,7 +95,9 @@ const grouped = workTypes.reduce(
           appointment right away.
         </p>
       </div>
-      <VisitScheduler />
+      <div class="reveal delay-200">
+        <VisitScheduler />
+      </div>
     </div>
   </section>
   <section id="contact">
