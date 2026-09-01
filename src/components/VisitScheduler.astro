@@ -71,7 +71,7 @@ const { class: className } = Astro.props;
         aria-labelledby="step-1-title"
       >
         <h3 id="step-1-title" class="text-lg font-semibold mb-4 text-slate-800">
-          What service do you need? What service do you need?
+          What service do you need?
         </h3>
 
         <div
@@ -87,6 +87,24 @@ const { class: className } = Astro.props;
               ))
             }
           </div>
+        </div>
+
+        <!-- Help message for custom/unlisted services -->
+        <div
+          class="mt-4 p-3.5 bg-sky-50/80 border border-sky-100 rounded-xl flex items-center justify-between gap-3 text-slate-700"
+        >
+          <p class="text-xs sm:text-sm text-slate-600">
+            <span class="font-semibold text-slate-800"
+              >Don't see what you need?</span
+            > Contact us directly and we'll gladly provide custom information & a
+            free quote.
+          </p>
+          <a
+            href="/#contact"
+            class="shrink-0 text-xs sm:text-sm font-semibold text-sky-600 hover:text-sky-700 hover:underline"
+          >
+            Get in touch →
+          </a>
         </div>
 
         <div class="mt-6 flex justify-end">
@@ -372,7 +390,7 @@ const { class: className } = Astro.props;
 
   // Service icons by category
   const SERVICE_ICONS: Record<string, string> = {
-    "House Cleaning": "🏠",
+    Cleaning: "🏠",
     "Office Cleaning": "🏢",
     "After Builders Cleaning": "🧹",
     "End of Lease Cleaning": "🔑",
@@ -459,7 +477,6 @@ const { class: className } = Astro.props;
 
   // Helper to get service icon
   function getServiceIcon(name: string): string {
-    return SERVICE_ICONS[name] || "📋";
     return SERVICE_ICONS[name] || "📋";
   }
 
@@ -921,7 +938,6 @@ const { class: className } = Astro.props;
           "text-slate-500",
           "py-8",
         ]);
-        message.textContent = "No services available.";
         message.textContent = "No services available.";
         grid.appendChild(message);
         return;
